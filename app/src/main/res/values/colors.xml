@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008577</color>
+    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorAccent">#D81B60</color>
+    <color name="validWord">#31913E</color>
+    <color name="gameWord">#1B1D1B</color>
+    <color name="invalidWord">#91313C</color>
+    <color name="letterBackground">#DBD7D7</color>
+    <color name="letterOutline">#000222</color>
+</resources>
