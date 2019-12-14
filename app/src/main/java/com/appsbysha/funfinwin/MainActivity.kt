@@ -265,10 +265,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         if (isNeighbors(word, testWord)) {
             addWords.removeAt(newWordPosition - hintPos) //remove the next blank word
             midWordAdapter?.notifyAdapterOfWin()
-            if (solutionList?.size ?: 0 < addWords.size)
+            Toast.makeText(this, "way to go!", Toast.LENGTH_SHORT).show()
+
+            /*if (solutionList?.size ?: 0 < addWords.size)
                 Log.i("done", "there is a shorter solution")
             else
-                Log.i("done", "way to go!")
+                Log.i("done", "way to go!")*/
         } else {
             midWordAdapter?.notifyDataSetChanged()
         }
