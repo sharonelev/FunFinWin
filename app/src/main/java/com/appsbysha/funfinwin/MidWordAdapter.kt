@@ -5,7 +5,9 @@ import android.graphics.Typeface
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
+import android.text.InputType
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +17,11 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
-class MidWordAdapter(private val items : MutableList<String>, private val numOfLetters: Int,
-                     private val dbHelper: DictionaryDbHelper, private val context: Context,
-                     mAddWordListener: AddWordListener, mRemoveWordListener: RemoveWordListener ) : RecyclerView.Adapter<MidWordAdapter.WordViewHolder>() {
+class MidWordAdapter(
+    private val items: MutableList<String>, private val numOfLetters: Int,
+    private val dbHelper: DictionaryDbHelper, private val context: Context,
+    mAddWordListener: AddWordListener, mRemoveWordListener: RemoveWordListener
+) : RecyclerView.Adapter<MidWordAdapter.WordViewHolder>() {
 
     var addWordListener = mAddWordListener
     var removeWordListener = mRemoveWordListener
@@ -29,7 +33,13 @@ class MidWordAdapter(private val items : MutableList<String>, private val numOfL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
 
-        return WordViewHolder(LayoutInflater.from(context).inflate(R.layout.word_row, parent, false))
+        return WordViewHolder(
+            LayoutInflater.from(context).inflate(
+                R.layout.word_row,
+                parent,
+                false
+            )
+        )
     }
 
     override fun getItemCount(): Int {
@@ -38,68 +48,83 @@ class MidWordAdapter(private val items : MutableList<String>, private val numOfL
 
     override fun onBindViewHolder(holder: WordViewHolder, position: Int) {
 
-       /* if(position == 0 || position == itemCount-1) {
-            holder.rowLayout.visibility = View.GONE
-            return
-        }*/
         holder.rowLayout.visibility = View.VISIBLE
         holder.linearLayout.removeAllViews()
         holder.removeWord.setOnClickListener(holder)
         holder.removeWord.visibility = View.INVISIBLE
-        holder.swapHint.visibility = View.INVISIBLE
-        holder.swapHint.setOnClickListener(holder)
 
 
-        var prevWord: CharArray? = null
-        if(position != 0 && position != itemCount-1)
-        {
-            if(!isWin)
-            holder.removeWord.visibility = View.VISIBLE
+        if (position != 0 && position != itemCount - 1) {
+            if (!isWin)
+                holder.removeWord.visibility = View.VISIBLE
         }
-        val params = LinearLayout.LayoutParams(UiUtils.dpToPixels(40,context), UiUtils.dpToPixels(40,context))
-        params.setMargins(1,0,1,0)
+        val params = LinearLayout.LayoutParams(
+            UiUtils.dpToPixels(40, context),
+            UiUtils.dpToPixels(40, context)
+        )
+        params.setMargins(1, 0, 1, 0)
 
         val word = items[position]
-        if(word.isEmpty()){
-            holder.swapHint.visibility = View.VISIBLE
-            editWordPosition = position
-            prevWord = items[position + hintPos].toCharArray()
-        }
+
         val wordArray = word.toCharArray()
-        for(i in 0 until numOfLetters) {
+        for (i in 0 until numOfLetters) {
             val newLetter = EditText(context)
-            newLetter.id =  i
+            newLetter.id = i
             newLetter.layoutParams = params
-            newLetter.gravity = android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
-            newLetter.hint = prevWord?.get(i).toString()
-            newLetter.setBackgroundResource(R.drawable.letter_background)
-            newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
-            newLetter.setTextColor(ContextCompat.getColor(context,R.color.invalidWord))
-            newLetter.filters = arrayOf<InputFilter>(LengthFilter(2))
-
-            if(wordArray.isNotEmpty()) {
-                newLetter.setText(wordArray[i].toString())
-                newLetter.isEnabled = false
-                if(position != 0 && position != itemCount-1) {
-                    newLetter.setTextColor(ContextCompat.getColor(context, R.color.validWord))
-                    newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
-                }
-                else {
-                    newLetter.setTextColor(ContextCompat.getColor(context, R.color.gameWord))
-                    newLetter.setTypeface(Typeface.SANS_SERIF,Typeface.BOLD)
-                }
-
-            }
-            else {
+            newLetter.gravity =
+                android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
+            if (word.isEmpty()) {
+                editWordPosition = position
+                newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
+                newLetter.setTextColor(ContextCompat.getColor(context, R.color.invalidWord))
+                newLetter.filters = arrayOf<InputFilter>(LengthFilter(2))
                 newLetter.isEnabled = true
                 newLetter.addTextChangedListener(holder)
+                newLetter.isCursorVisible = false
+
+                newLetter.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                newLetter.setBackgroundResource(R.drawable.editable_letter_background)
+                newLetter.setOnFocusChangeListener{_, hasFocus ->
+                    if(hasFocus){
+                        newLetter.setBackgroundResource(R.drawable.focused_letter_background)
+                    }
+                    else{
+                        newLetter.setBackgroundResource(R.drawable.editable_letter_background)
+                    }
+                    newLetter.setOnKeyListener { _, keyCode, event ->
+                        if (keyCode == KeyEvent.KEYCODE_DEL && event.action == KeyEvent.ACTION_DOWN) {
+                            //backspace
+                            if (i != 0) { //Don't implement for first digit
+                                val nextChar = holder.linearLayout.getChildAt(i - 1) as EditText
+                                nextChar.requestFocus()
+                                nextChar.setSelection(nextChar.length())
+                            }
+                        }
+                        false
+                    }
+                }
+
+
+            }
+
+           else {
+                newLetter.setText(wordArray[i].toString())
+                newLetter.setBackgroundResource(R.drawable.valid_letter_background)
+
+                newLetter.isEnabled = false
+                if (position != 0 && position != itemCount - 1) {
+                    newLetter.setTextColor(ContextCompat.getColor(context, R.color.validWord))
+                    newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
+                } else {
+                    newLetter.setTextColor(ContextCompat.getColor(context, R.color.gameWord))
+                    newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.BOLD)
+                }
+
             }
             holder.linearLayout.addView(newLetter)
 
         }
-
-
-
+            holder.linearLayout.getChildAt(0).requestFocus()
 
 
     }
@@ -111,51 +136,54 @@ class MidWordAdapter(private val items : MutableList<String>, private val numOfL
 
     }
 
-    inner class WordViewHolder (view: View) : RecyclerView.ViewHolder(view), TextWatcher, View.OnClickListener {
+    inner class WordViewHolder(view: View) : RecyclerView.ViewHolder(view), TextWatcher,
+        View.OnClickListener {
 
         var rowLayout: View = view.findViewById<View>(R.id.row_layout)
         var linearLayout: LinearLayout = view.findViewById(R.id.editTextLayout)
         var removeWord: TextView = view.findViewById(R.id.removeWord)
-        var swapHint: TextView = view.findViewById(R.id.swapHint)
+        //   var swapHint: TextView = view.findViewById(R.id.swapHint)
 
         private var letterTemp = ""
 
         override fun afterTextChanged(s: Editable?) {
             var newWord = ""
 
-            s?.let{
-
+            s?.let {
+                if (s.isBlank()) {
+                    return
+                }
 
                 for (index in 0 until linearLayout.childCount) {
                     val letter = linearLayout.getChildAt(index)
                     if (letter is EditText) {
                         letter.removeTextChangedListener(this)
-                        if (s !== letter.editableText) {
-                            if (s.isBlank()) { //hit backspace
-                             letter.setText("")
-                            }
-                            else {
-                                letter.setText(letter.hint)
-                            }
-                        }
-                        else
-                        {
+                        if (s === letter.editableText) {
                             if (s.length >= 2) {//if more than 1 char
                                 val newLetterTemp = s.toString().substring(s.length - 1, s.length)
                                 if (newLetterTemp != letterTemp) {
                                     letter.setText(newLetterTemp)
                                 } else {
                                     letter.setText(s.toString().substring(0, s.length - 1))
-                                }}
+                                }
+                            }
+                            if(index != numOfLetters - 1) //last char
+                            {
+                                val nextChar = linearLayout.getChildAt(index + 1) as EditText
+                                nextChar.requestFocus()
+                                nextChar.setSelection(nextChar.length())
+                            }
                         }
                         newWord += letter.text
+
                         letter.addTextChangedListener(this)
 
                     }
 
                 }
-                addWordListener.onAddWord(newWord, adapterPosition, hintPos)
-
+                if (newWord.length == numOfLetters) {
+                    addWordListener.onAddWord(newWord, adapterPosition)
+                }
 
             }
         }
@@ -172,10 +200,6 @@ class MidWordAdapter(private val items : MutableList<String>, private val numOfL
                 R.id.removeWord -> {
                     removeWordListener.onRemoveWord(adapterPosition, editWordPosition)
                 }
-                R.id.swapHint -> {
-                    hintPos *= (-1)
-                    notifyDataSetChanged()
-                }
             }
         }
 
@@ -183,12 +207,12 @@ class MidWordAdapter(private val items : MutableList<String>, private val numOfL
     }
 
 
-    interface AddWordListener{
-        fun onAddWord(word: String, position: Int, hintPos: Int)
+    interface AddWordListener {
+        fun onAddWord(word: String, position: Int)
     }
 
 
-    interface RemoveWordListener{
+    interface RemoveWordListener {
         fun onRemoveWord(position: Int, editWordPosition: Int)
     }
 

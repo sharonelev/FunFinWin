@@ -3,17 +3,17 @@
         android:orientation="horizontal" android:layout_width="match_parent"
         android:layout_height="@dimen/row_height"
         android:id="@+id/row_layout"
-        android:layout_margin="5dp"
+        android:layout_margin="10dp"
         android:background="@color/colorPrimary">
 
-    <TextView
+<!--    <TextView
             android:id="@+id/swapHint"
             android:layout_margin="10dp"
             android:layout_gravity="center"
             android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="&#x21c5;"/>
+            android:text="&#x21c5;"/>-->
 
     <LinearLayout
         android:id="@+id/editTextLayout"

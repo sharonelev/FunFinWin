@@ -6,6 +6,8 @@
     <color name="validWord">#31913E</color>
     <color name="gameWord">#1B1D1B</color>
     <color name="invalidWord">#91313C</color>
-    <color name="letterBackground">#DBD7D7</color>
+    <color name="letterBackground">#E6E3DB</color>
+    <color name="focusedLetterBackground">#D8A960</color>
+    <color name="editableLetterBackground">#A7A4A4</color>
     <color name="letterOutline">#000222</color>
 </resources>

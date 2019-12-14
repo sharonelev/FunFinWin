@@ -4,6 +4,7 @@ import android.database.SQLException
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -228,39 +229,51 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     }
 
 
-    override fun onAddWord(word: String, position: Int, hintPos: Int) {
+    override fun onAddWord(word: String, position: Int) {
 
 
-        if (word.length == numOfLetters && dbHelper.check_word(word) && isNeighbors(
-                word,
-                addWords[position + hintPos]
-            )
-        ) {
-
-            Log.i("onValidWord", word)
-            var newWordPosition = position
-
-            if (hintPos == 1) {
-                newWordPosition += hintPos
+        var hintPos: Int = when {
+            isNeighbors(word, addWords[position + 1]) -> 1
+            isNeighbors(word, addWords[position - 1]) -> -1
+            else -> {
+                Toast.makeText(
+                    this,
+                    "More than one letter difference than adjacent word",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return
             }
-            addWords.add(newWordPosition, word)
-
-
-            val testWord = addWords[newWordPosition - hintPos * 2]
-            //val lastWord = solutionList?.last() ?: ""
-            if (isNeighbors(word, testWord)) {
-                addWords.removeAt(newWordPosition - hintPos) //remove the next blank word
-                midWordAdapter?.notifyAdapterOfWin()
-                if (solutionList?.size ?: 0 < addWords.size)
-                    Log.i("done", "there is a shorter solution")
-                else
-                    Log.i("done", "way to go!")
-            } else {
-                midWordAdapter?.notifyDataSetChanged()
-            }
-
-
         }
+
+        if (!dbHelper.check_word(word)) {
+            Toast.makeText(this, "Word not in the Scrabble dictionary", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+
+        Log.i("onValidWord", word)
+        var newWordPosition = position
+
+        if (hintPos == 1) {
+            newWordPosition += hintPos
+        }
+        addWords.add(newWordPosition, word)
+
+
+        val testWord = addWords[newWordPosition - hintPos * 2]
+
+        if (isNeighbors(word, testWord)) {
+            addWords.removeAt(newWordPosition - hintPos) //remove the next blank word
+            midWordAdapter?.notifyAdapterOfWin()
+            if (solutionList?.size ?: 0 < addWords.size)
+                Log.i("done", "there is a shorter solution")
+            else
+                Log.i("done", "way to go!")
+        } else {
+            midWordAdapter?.notifyDataSetChanged()
+        }
+
+
     }
 
 
@@ -270,7 +283,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
         addWords[position] = ""
 
-        if(position != editWordPosition) {
+        if (position != editWordPosition) {
             var hintPos = 1
             if (position < editWordPosition)
                 hintPos = -1
