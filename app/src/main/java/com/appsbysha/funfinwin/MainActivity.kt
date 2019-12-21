@@ -92,13 +92,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             do {
                 firstWord = dbHelper.get_word(numOfLetters)
                 Log.i("firstWord", firstWord)
-                lastWord = dbHelper.get_word(numOfLetters)
+                lastWord =  dbHelper.get_word(numOfLetters)
                 Log.i("lastWord", lastWord)
             } while (isNeighbors(firstWord, lastWord) && firstWord != lastWord)
 
             addWords = mutableListOf(firstWord, "", lastWord)
 
-            //todo if computing more than 3 seconds, random new words
+            //todo if computing more than 10 seconds, random new words
             //todo add progress bar and disable new game
             val firstWordArray: CharArray = firstWord.toCharArray()
             val secondWordArray: CharArray = lastWord.toCharArray()
@@ -145,18 +145,19 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
             if (firstWordArray[index] == secondWordArray[index])
                 continue
-            if (list.size > 2) {
-                //don't swap a letter that was just swapped
-
-                var twoWordsBackArray = list[list.size - 2]
-                if (firstWordArray[index] != twoWordsBackArray[index])
-                    continue
-            }
 
 
             val newWordArray: CharArray = firstWordArray.clone()
             newWordArray[index] = secondWordArray[index]
             val newWord = String(newWordArray)
+
+
+            if (list.size > 1) {
+                //don't swap a letter that was just swapped
+                var twoWordsBackArray = list[list.size - 2]
+                if (firstWordArray[index] != twoWordsBackArray[index])
+                    continue
+            }
 
             if (newWord == secondWord) { //full solution
                 list.add(newWord)
@@ -210,12 +211,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         for (index in 0 until numOfLetters) {
             if (firstWordArray[index] == secondWordArray[index])
                 continue
-            if (list.size > 2) {
-                //don't swap a letter that was just swapped
-                var twoWordsBackArray = list[list.size - 2]
-                if (firstWordArray[index] != twoWordsBackArray[index])
-                    continue
-            }
+
 
             for (i in 'a'..'z') {
                 if (i == secondWordArray[index] || i == firstWordArray[index])
@@ -224,6 +220,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 val newWordArray: CharArray = firstWordArray.clone()
                 newWordArray[index] = i
                 val newWord = String(newWordArray)
+
+                if (list.size > 1) {
+                    //don't swap a letter that was just swapped
+                    var twoWordsBackArray = list[list.size - 2]
+                    if (firstWordArray[index] != twoWordsBackArray[index])
+                        continue
+                }
 
                 if (newWord == secondWord) { //full solution
                     list.add(newWord)
