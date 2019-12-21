@@ -4,10 +4,15 @@ import android.database.SQLException
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ProgressBar
+import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.florescu.android.rangeseekbar.RangeSeekBar
 import java.io.IOException
 import kotlin.math.max
 import kotlin.math.min
@@ -16,12 +21,17 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     MidWordAdapter.RemoveWordListener {
 
     private var numOfLetters = 0
+    private var minWords = 3
     private var maxWords = 10
 
     lateinit var addWordsRV: RecyclerView
     var midWordAdapter: MidWordAdapter? = null
-    private var solutionList: MutableList<String>? = null
-
+    private var solutionList: MutableList<String> = mutableListOf()
+    private lateinit var stepRangeBar: RangeSeekBar<Int>
+    private lateinit var numOfLettersSpinner: Spinner
+    private lateinit var progressBar: ProgressBar
+    var firstWord: String = ""
+    var lastWord: String = ""
 
     lateinit var addWords: MutableList<String>
 
@@ -32,12 +42,17 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         setContentView(R.layout.activity_main)
         attachDB()
 
+        progressBar = findViewById(R.id.createGameProgressBar)
         addWordsRV = findViewById(R.id.listOfAddWords)
+        stepRangeBar = findViewById(R.id.stepsRangePicker)
+        stepRangeBar.setRangeValues(3, 20)
+        numOfLettersSpinner = findViewById(R.id.numOfLettersSpinner)
+        numOfLettersSpinner.setSelection(1) // default 4
 
+        numOfLetters = (numOfLettersSpinner.selectedItem as String).toInt()
 
-
-        numOfLetters = 4 //todo add number picker
-        maxWords = 10 //todo add number picker
+        minWords = stepRangeBar.absoluteMinValue as Int
+        maxWords = stepRangeBar.absoluteMaxValue as Int
 
         createGame()
 
@@ -67,11 +82,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun createGame() {
 
 
+        progressBar.visibility = View.VISIBLE
+        progressBar.bringToFront()
+
         do {
             println(solutionList)
 
-            var firstWord: String
-            var lastWord: String
+
             do {
                 firstWord = dbHelper.get_word(numOfLetters)
                 Log.i("firstWord", firstWord)
@@ -83,22 +100,29 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
             //todo if computing more than 3 seconds, random new words
             //todo add progress bar and disable new game
-            solutionList = solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord))
+            val firstWordArray: CharArray = firstWord.toCharArray()
+            val secondWordArray: CharArray = lastWord.toCharArray()
+
+
+
+            solutionList.clear()
+         //   solutionList =
+                solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord), mutableListOf())
             //testList = solve(mutableListOf("dame"), "onyx", mutableListOf("dame"))
 
-        } while (solutionList == null || solutionList?.size ?: 0 > maxWords)
+        } while (solutionList.isEmpty() || solutionList.size > maxWords || solutionList.size < minWords)
 
-        solutionList?.let {
-            Log.i("solution size", it.size.toString())
-            for (index in 0 until it.size) {
-                //          Log.i(index.toString(), it[index])
 
-            }
-        }
-        midWordAdapter = MidWordAdapter(addWords, numOfLetters, dbHelper, this, this, this)
+        findViewById<TextView>(R.id.solvedNumOfSteps).text =
+            "min num of steps : ${solutionList.size}"
+
+        midWordAdapter = MidWordAdapter(addWords, numOfLetters, this, this, this)
         addWordsRV.layoutManager = LinearLayoutManager(this)
 
         addWordsRV.adapter = midWordAdapter
+
+
+        progressBar.visibility = View.GONE
 
     }
 
@@ -106,44 +130,78 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun solve(
         list: MutableList<String>,
         secondWord: String,
-        usedWordsList: MutableList<String>
-    ): MutableList<String>? {
+        usedWordsList: MutableList<String>,
+        shortestList: MutableList<String>
+    ): MutableList<String> {
 
 
-        val firstWordArray: CharArray = list.last().toCharArray()
+        val firstWord = list.last()
+        val firstWordArray: CharArray = firstWord.toCharArray()
         val secondWordArray: CharArray = secondWord.toCharArray()
 
+
+
         for (index in 0 until numOfLetters) {
+
             if (firstWordArray[index] == secondWordArray[index])
                 continue
+            if (list.size > 2) {
+                //don't swap a letter that was just swapped
+
+                var twoWordsBackArray = list[list.size - 2]
+                if (firstWordArray[index] != twoWordsBackArray[index])
+                    continue
+            }
+
 
             val newWordArray: CharArray = firstWordArray.clone()
             newWordArray[index] = secondWordArray[index]
             val newWord = String(newWordArray)
 
-            var usedWord = false
-            for (j in 0 until usedWordsList.size) {
-                if (newWord == usedWordsList[j])
-                    usedWord = true
-            }
-
-            if (usedWord)
-                continue
-
-            if (!isWord(newWord))
-                continue
-
-            list.add(newWord)
-            usedWordsList.add(newWord)
-
-            when {
-                newWord == secondWord -> {
-                    return list
+            if (newWord == secondWord) { //full solution
+                list.add(newWord)
+                usedWordsList.add(newWord)
+                if (solutionList.isEmpty() || list.size < solutionList.size) {
+                    solutionList.clear()
+                    solutionList.addAll(list)
                 }
-                solve(list, secondWord, usedWordsList) == null -> {
+                return list
+
+            } else {
+
+                var usedWord = false
+                for (j in 0 until usedWordsList.size) {
+                    if (newWord == usedWordsList[j])
+                        usedWord = true
+                }
+
+                if (usedWord)
+                    continue
+
+                if (!isWord(newWord))
+                    continue
+
+                if(solutionList.isNotEmpty() && list.size + calcOptimalMin(newWordArray, secondWordArray) >= solutionList.size )
+                    continue
+
+                list.add(newWord)
+                usedWordsList.add(newWord)
+
+                val solve = solve(list, secondWord, usedWordsList, solutionList).toMutableList()
+                if (solve.isEmpty())
                     list.remove(newWord)
+                else {
+                    usedWordsList.remove(newWord)
+                    var p = solve.indexOf(firstWord)
+                    if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
+                        return solve
+                    else {
+                        list.clear()
+                        list.addAll(0, solve.subList(0,p+1))
+
+                    }
                 }
-                else -> return list
+                continue
             }
 
         }
@@ -152,6 +210,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         for (index in 0 until numOfLetters) {
             if (firstWordArray[index] == secondWordArray[index])
                 continue
+            if (list.size > 2) {
+                //don't swap a letter that was just swapped
+                var twoWordsBackArray = list[list.size - 2]
+                if (firstWordArray[index] != twoWordsBackArray[index])
+                    continue
+            }
 
             for (i in 'a'..'z') {
                 if (i == secondWordArray[index] || i == firstWordArray[index])
@@ -161,35 +225,64 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 newWordArray[index] = i
                 val newWord = String(newWordArray)
 
-
-                var usedWord = false
-                for (j in 0 until usedWordsList.size) {
-                    if (newWord == usedWordsList[j])
-                        usedWord = true
-                }
-                if (usedWord)
-                    continue
-
-                if (!isWord(newWord))
-                    continue
-
-                list.add(newWord)
-                usedWordsList.add(newWord)
-
-                when {
-                    newWord == secondWord -> {
-                        return list
+                if (newWord == secondWord) { //full solution
+                    list.add(newWord)
+                    usedWordsList.add(newWord)
+                    if (solutionList.isEmpty() || list.size < solutionList.size) {
+                        solutionList.clear()
+                        solutionList.addAll(list)
                     }
-                    solve(list, secondWord, usedWordsList) == null -> { //can't continue from here
+                    return list
+
+                } else {
+
+                    var usedWord = false
+                    for (j in 0 until usedWordsList.size) {
+                        if (newWord == usedWordsList[j])
+                            usedWord = true
+                    }
+                    if (usedWord)
+                        continue
+
+                    if (!isWord(newWord))
+                        continue
+
+                    if(solutionList.isNotEmpty() && list.size + calcOptimalMin(newWordArray, secondWordArray) >= solutionList.size )
+                        continue
+
+                    list.add(newWord)
+                    usedWordsList.add(newWord)
+
+                    val solve = solve(list, secondWord, usedWordsList, solutionList).toMutableList()
+                    println(solve)
+                    if (solve.isEmpty()) {
                         list.remove(newWord)
+
                     }
-                    else -> return list
+                    else {
+                        usedWordsList.remove(newWord) //the new word leads to solution even if not optimal
+
+                        var p = solve.indexOf(firstWord)
+                        if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
+                            return solve
+                        else {
+                            list.clear()
+                            list.addAll(0, solve.subList(0,p+1))
+
+                        }
+                    }
+                    continue
                 }
 
             }
-        }
-        return null
 
+        }
+
+        if(list.size <3)
+        {
+            println(list)
+        }
+        return mutableListOf()
     }
 
     private fun isWord(word: String): Boolean {
@@ -221,9 +314,22 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     }
 
 
+    fun calcOptimalMin(firstWordArray: CharArray, secondWordArray: CharArray): Int{
+        var counter = 1
+        for (index in 0 until numOfLetters) {
+            if (firstWordArray[index] != secondWordArray[index])
+                counter++
+        }
+        return counter
+    }
+
     fun newGameClick(view: View) {
 
-        solutionList = null
+        numOfLetters = (numOfLettersSpinner.selectedItem as String).toInt()
+        minWords = stepRangeBar.selectedMinValue as Int
+        maxWords = stepRangeBar.selectedMaxValue as Int
+        solutionList = mutableListOf()
+        //    addWordsRV.requestFocus()
         createGame()
 
     }
@@ -265,12 +371,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         if (isNeighbors(word, testWord)) {
             addWords.removeAt(newWordPosition - hintPos) //remove the next blank word
             midWordAdapter?.notifyAdapterOfWin()
-            Toast.makeText(this, "way to go!", Toast.LENGTH_SHORT).show()
 
-            /*if (solutionList?.size ?: 0 < addWords.size)
-                Log.i("done", "there is a shorter solution")
+
+            if (solutionList.size  < addWords.size)
+                Toast.makeText(this, "way to go! But... there is a shorter solution", Toast.LENGTH_SHORT).show()
             else
-                Log.i("done", "way to go!")*/
+                Toast.makeText(this, "way to go!", Toast.LENGTH_SHORT).show()
         } else {
             midWordAdapter?.notifyDataSetChanged()
         }

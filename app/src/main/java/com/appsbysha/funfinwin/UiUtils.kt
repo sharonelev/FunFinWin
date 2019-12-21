@@ -9,5 +9,9 @@ object UiUtils {
         val displayMetrics = context.resources.displayMetrics
         return (dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)).roundToInt()
     }
+    fun pixelsToSp(context: Context, sp: Float): Float {
+        val scaledDensity = context.resources.displayMetrics.scaledDensity
+        return  sp*scaledDensity
+    }
 
 }

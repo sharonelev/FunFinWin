@@ -16,49 +16,85 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-<LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/settingsLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-    <EditText
-            android:id="@+id/numOfLettersEditText"
-            android:hint="num of letters 3-5"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            />
-    <EditText
-            android:id="@+id/maxStepsEditTExt"
-            android:hint="max steps"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            />
-            <Button
-                    android:id="@+id/newGameButton"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:onClick="newGameClick"
-                    android:text="NEW GAME"
-              />
-        </LinearLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/listOfAddWords"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:layout_marginBottom="20dp"
                     android:orientation="vertical"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/settingsLayout" />
+                    app:layout_constraintTop_toTopOf="parent"                    />
 
 
+            <ProgressBar
+
+                    android:id="@+id/createGameProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/listOfAddWords"
+                    app:layout_constraintBottom_toBottomOf="@id/listOfAddWords"
+                    />
+            <LinearLayout
+                    android:id="@+id/settingsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/listOfAddWords">
+
+                <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Number of Letters:"/>
+
+                    <Spinner
+                            android:id="@+id/numOfLettersSpinner"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:entries="@array/number_of_letters"/>
+
+                    <Button
+                            android:id="@+id/newGameButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="20dp"
+                            android:layout_weight="1"
+                            android:onClick="newGameClick"
+                            android:text="NEW GAME" />
+
+                    <TextView
+                            android:id="@+id/solvedNumOfSteps"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                        android:text="min num of steps: "/>
+
+                </LinearLayout>
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Max and Min steps for solution:"/>
+
+                <org.florescu.android.rangeseekbar.RangeSeekBar
+                        android:id="@+id/stepsRangePicker"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginEnd="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:absoluteMaxValue="20"
+                        app:absoluteMinValue="3"/>
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </ScrollView>

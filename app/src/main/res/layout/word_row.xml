@@ -3,17 +3,9 @@
         android:orientation="horizontal" android:layout_width="match_parent"
         android:layout_height="@dimen/row_height"
         android:id="@+id/row_layout"
-        android:layout_margin="10dp"
+        android:layout_margin="1dp"
         android:background="@color/colorPrimary">
 
-<!--    <TextView
-            android:id="@+id/swapHint"
-            android:layout_margin="10dp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="&#x21c5;"/>-->
 
     <LinearLayout
         android:id="@+id/editTextLayout"
@@ -27,9 +19,11 @@
 
     <TextView
             android:id="@+id/removeWord"
-            android:layout_margin="10dp"
+            android:layout_marginLeft="5dp"
+            android:textStyle="bold"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textSize="18sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="x"/>

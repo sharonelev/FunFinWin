@@ -18,8 +18,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 
 class MidWordAdapter(
-    private val items: MutableList<String>, private val numOfLetters: Int,
-    private val dbHelper: DictionaryDbHelper, private val context: Context,
+    private val items: MutableList<String>, private val numOfLetters: Int, private val context: Context,
     mAddWordListener: AddWordListener, mRemoveWordListener: RemoveWordListener
 ) : RecyclerView.Adapter<MidWordAdapter.WordViewHolder>() {
 
@@ -27,7 +26,6 @@ class MidWordAdapter(
     var removeWordListener = mRemoveWordListener
 
 
-    var hintPos = -1
     var isWin: Boolean = false
     var editWordPosition = 1
 
@@ -59,8 +57,8 @@ class MidWordAdapter(
                 holder.removeWord.visibility = View.VISIBLE
         }
         val params = LinearLayout.LayoutParams(
-            UiUtils.dpToPixels(40, context),
-            UiUtils.dpToPixels(40, context)
+            UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context),
+            UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context)
         )
         params.setMargins(1, 0, 1, 0)
 
@@ -69,10 +67,13 @@ class MidWordAdapter(
         val wordArray = word.toCharArray()
         for (i in 0 until numOfLetters) {
             val newLetter = EditText(context)
+            val padding = UiUtils.dpToPixels(1,context)
+            newLetter.setPadding(padding,padding,padding,padding)
             newLetter.id = i
             newLetter.layoutParams = params
             newLetter.gravity =
                 android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
+            newLetter.textSize = UiUtils.pixelsToSp(context, 10f)
             if (word.isEmpty()) {
                 editWordPosition = position
                 newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
@@ -94,10 +95,11 @@ class MidWordAdapter(
                     newLetter.setOnKeyListener { _, keyCode, event ->
                         if (keyCode == KeyEvent.KEYCODE_DEL && event.action == KeyEvent.ACTION_DOWN) {
                             //backspace
-                            if (i != 0) { //Don't implement for first digit
-                                val nextChar = holder.linearLayout.getChildAt(i - 1) as EditText
-                                nextChar.requestFocus()
-                                nextChar.setSelection(nextChar.length())
+                            if(newLetter.text.isEmpty() && i != 0) { //Don't implement for first digit
+                                val prevChar = holder.linearLayout.getChildAt(i - 1) as EditText
+                                prevChar.text.clear()
+                                prevChar.requestFocus()
+                                prevChar.setSelection(prevChar.length())
                             }
                         }
                         false
@@ -124,7 +126,9 @@ class MidWordAdapter(
             holder.linearLayout.addView(newLetter)
 
         }
+        if(position == editWordPosition) {
             holder.linearLayout.getChildAt(0).requestFocus()
+        }
 
 
     }
