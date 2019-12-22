@@ -1,101 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/drawerLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        tools:context=".MainActivity">
+        android:layout_height="match_parent">
 
 
-    <ScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:background="@color/focusedLetterBackground"
+                android:fitsSystemWindows="true"
+                android:minHeight="?android:attr/actionBarSize"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+        </androidx.appcompat.widget.Toolbar>
+
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/wordsRecyclerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/toolBar" />
 
 
-            <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/listOfAddWords"
+        <ProgressBar
+
+                android:id="@+id/createGameProgressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="@id/wordsRecyclerView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/wordsRecyclerView" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+            android:id="@+id/leftDrawer"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@color/focusedLetterBackground"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="10dp"
+            android:paddingEnd="20dp">
+
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:src="@mipmap/ic_launcher" />
+
+        <TextView
+                android:id="@+id/newGameDrawerButton"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/new_game" />
+
+        <TextView
+                android:id="@+id/startOverDrawerButton"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+
+                android:text="@string/start_over" />
+
+        <TextView
+                android:id="@+id/hintDrawerButton"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+
+                android:text="@string/hint" />
+
+        <TextView
+                android:id="@+id/solveDrawerButton"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/solve" />
+
+        <TextView
+                android:id="@+id/showNumStepsDrawerButton"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+
+                android:text="@string/show" />
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+
+                android:orientation="horizontal">
+
+            <TextView
+                    android:id="@+id/numOfLettersDrawerSpinner"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="20dp"
-                    android:orientation="vertical"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"                    />
+                    android:layout_height="match_parent"
+                    android:text="@string/number_of_letters" />
 
-
-            <ProgressBar
-
-                    android:id="@+id/createGameProgressBar"
+            <TextView
+                    android:id="@+id/threeLetters"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/listOfAddWords"
-                    app:layout_constraintBottom_toBottomOf="@id/listOfAddWords"
-                    />
-            <LinearLayout
-                    android:id="@+id/settingsLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/listOfAddWords">
+                    android:layout_height="match_parent"
+                    android:paddingStart="6dp"
+                    android:text="3" />
 
-                <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+            <TextView
+                    android:id="@+id/fourLetters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingStart="6dp"
+                    android:text="4" />
 
-                    <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Number of Letters:"/>
+            <TextView
+                    android:id="@+id/fiveLetters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingStart="6dp"
+                    android:text="5" />
+        </LinearLayout>
 
-                    <Spinner
-                            android:id="@+id/numOfLettersSpinner"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:entries="@array/number_of_letters"/>
+        <TextView
+                android:id="@+id/minMaxDrawerRange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/min_max_steps" />
 
-                    <Button
-                            android:id="@+id/newGameButton"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="20dp"
-                            android:layout_weight="1"
-                            android:onClick="newGameClick"
-                            android:text="NEW GAME" />
-
-                    <TextView
-                            android:id="@+id/solvedNumOfSteps"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                        android:text="min num of steps: "/>
-
-                </LinearLayout>
-                <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Max and Min steps for solution:"/>
-
-                <org.florescu.android.rangeseekbar.RangeSeekBar
-                        android:id="@+id/stepsRangePicker"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:absoluteMaxValue="20"
-                        app:absoluteMinValue="3"/>
-            </LinearLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </ScrollView>
-</RelativeLayout>
+        <org.florescu.android.rangeseekbar.RangeSeekBar
+                android:id="@+id/stepsRangePicker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:absoluteMaxValue="20"
+                app:absoluteMinValue="3"
+                app:showLabels="true"
+                app:textAboveThumbsColor="@color/colorPrimary" />
+    </LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

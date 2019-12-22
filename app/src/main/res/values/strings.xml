@@ -1,9 +1,18 @@
 <resources>
     <string name="app_name">FunFinWin</string>
-    <string name="new_game">NEW GAME</string>
+    <string name="new_game">New Game</string>
     <string-array name="number_of_letters">
         <item>3</item>
         <item>4</item>
         <item>5</item>
     </string-array>
+    <string name="start_over">Start Over</string>
+    <string name="hint">Hint</string>
+    <string name="solve">Solve</string>
+    <string name="show">Show</string>
+    <string name="hide">Hide</string>
+    <string name="hide_number_of_steps"> solution number of steps</string>
+    <string name="show_number_of_steps"> solution number of steps:</string>
+    <string name="number_of_letters">Set number of letters:</string>
+    <string name="min_max_steps">Set number of steps range:</string>
 </resources>

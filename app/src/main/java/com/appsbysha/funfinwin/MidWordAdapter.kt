@@ -50,6 +50,7 @@ class MidWordAdapter(
         holder.linearLayout.removeAllViews()
         holder.removeWord.setOnClickListener(holder)
         holder.removeWord.visibility = View.INVISIBLE
+        holder.stepNum.text = position.toString()
 
 
         if (position != 0 && position != itemCount - 1) {
@@ -73,7 +74,7 @@ class MidWordAdapter(
             newLetter.layoutParams = params
             newLetter.gravity =
                 android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
-            newLetter.textSize = UiUtils.pixelsToSp(context, 10f)
+            newLetter.textSize = UiUtils.pixelsToSp(context, 5f)
             if (word.isEmpty()) {
                 editWordPosition = position
                 newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
@@ -146,7 +147,7 @@ class MidWordAdapter(
         var rowLayout: View = view.findViewById<View>(R.id.row_layout)
         var linearLayout: LinearLayout = view.findViewById(R.id.editTextLayout)
         var removeWord: TextView = view.findViewById(R.id.removeWord)
-        //   var swapHint: TextView = view.findViewById(R.id.swapHint)
+        var stepNum: TextView = view.findViewById(R.id.stepNum)
 
         private var letterTemp = ""
 
