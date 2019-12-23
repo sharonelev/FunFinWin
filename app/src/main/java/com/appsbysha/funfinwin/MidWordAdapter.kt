@@ -134,9 +134,9 @@ class MidWordAdapter(
 
     }
 
-    fun notifyAdapterOfWin() { //... your custom logic
+    fun notifyAdapterOfWin(win: Boolean) { //... your custom logic
 
-        isWin = true
+        isWin = win
         notifyDataSetChanged()
 
     }

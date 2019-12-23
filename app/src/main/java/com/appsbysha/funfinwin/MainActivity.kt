@@ -4,16 +4,22 @@ import android.content.Context
 import android.database.SQLException
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
+import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.activity_main.*
 import org.florescu.android.rangeseekbar.RangeSeekBar
 import java.io.IOException
 import kotlin.math.max
@@ -31,7 +37,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private var maxWords = 10
     private var shouldStop = false
 
-    lateinit var addWordsRV: RecyclerView
+    lateinit var gameWordsRecyclerView: RecyclerView
     var midWordAdapter: MidWordAdapter? = null
     private var solutionList: MutableList<String> = mutableListOf()
     private lateinit var stepRangeBar: RangeSeekBar<Int>
@@ -39,8 +45,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     var firstWord: String = ""
     var lastWord: String = ""
 
-    lateinit var addWords: MutableList<String>
+    lateinit var gameWordsList: MutableList<String>
 
+    private var showSolutionSteps = true
     private var previousNumView: TextView? = null
 
     var dbHelper: DictionaryDbHelper = DictionaryDbHelper(this)
@@ -54,14 +61,15 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         drawerLeft = findViewById(R.id.leftDrawer)
         setupToolbar()
         setupDrawerToggle()
+        showHideClick(findViewById(R.id.showNumStepsDrawerButton))
 
         attachDB()
 
         progressBar = findViewById(R.id.createGameProgressBar)
-        addWordsRV = findViewById(R.id.wordsRecyclerView)
+        gameWordsRecyclerView = findViewById(R.id.wordsRecyclerView)
         stepRangeBar = findViewById(R.id.stepsRangePicker)
         stepRangeBar.setRangeValues(3, 20)
-        stepRangeBar.selectedMinValue = 4
+        stepRangeBar.selectedMinValue = 3
         stepRangeBar.selectedMaxValue = 10
         //numOfLettersSpinner = findViewById(R.id.numOfLettersSpinner)
         // numOfLettersSpinner.setSelection(1) // default 4
@@ -80,17 +88,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         maxWords = stepRangeBar.absoluteMaxValue as Int
 
 
-        drawerLeft.findViewById<TextView>(R.id.newGameDrawerButton)
-            .setOnClickListener { newGameClick() }
-
-
     }
 
     private fun numOfLettersClick(view: TextView) {
 
         previousNumView?.background = null
 
-        view.background = getDrawable(R.drawable.editable_letter_background)
+        view.background = getDrawable(R.drawable.settings_number_background)
         numOfLetters = view.text.toString().toInt()
         previousNumView = view
 
@@ -168,13 +172,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
 
             do {
-                firstWord = dbHelper.get_word(numOfLetters)
+                firstWord = "drip" //dbHelper.get_word(numOfLetters)
                 Log.i("firstWord", firstWord)
-                lastWord = dbHelper.get_word(numOfLetters)
+                lastWord = "crab"//dbHelper.get_word(numOfLetters)
                 Log.i("lastWord", lastWord)
             } while (isNeighbors(firstWord, lastWord) && firstWord != lastWord)
 
-            addWords = mutableListOf(firstWord, "", lastWord)
+            gameWordsList = mutableListOf(firstWord, "", lastWord)
 
             //todo if computing more than 10 seconds, random new words
             val timer = object : CountDownTimer(10000, 1000) {
@@ -191,7 +195,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             timer.start()
             solutionList.clear()
             //   solutionList =
-            solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord), mutableListOf())
+            solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord))
             //testList = solve(mutableListOf("dame"), "onyx", mutableListOf("dame"))
 
         } while (solutionList.isEmpty() || solutionList.size - 1 > maxWords || solutionList.size - 1 < minWords)
@@ -200,13 +204,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         shouldStop = false
 
 
-        findViewById<TextView>(R.id.showNumStepsDrawerButton).text =
-            "min num of steps : ${solutionList.size - 1}"
+        midWordAdapter = MidWordAdapter(gameWordsList, numOfLetters, this, this, this)
+        gameWordsRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        midWordAdapter = MidWordAdapter(addWords, numOfLetters, this, this, this)
-        addWordsRV.layoutManager = LinearLayoutManager(this)
-
-        addWordsRV.adapter = midWordAdapter
+        gameWordsRecyclerView.adapter = midWordAdapter
 
 
         progressBar.visibility = View.GONE
@@ -217,8 +218,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun solve(
         list: MutableList<String>,
         secondWord: String,
-        usedWordsList: MutableList<String>,
-        shortestList: MutableList<String>
+        usedWordsList: MutableList<String>
     ): MutableList<String> {
 
 
@@ -280,7 +280,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 list.add(newWord)
                 usedWordsList.add(newWord)
 
-                val solve = solve(list, secondWord, usedWordsList, solutionList).toMutableList()
+                val solve = solve(list, secondWord, usedWordsList).toMutableList()
                 if (solve.isEmpty())
                     list.remove(newWord)
                 else {
@@ -358,7 +358,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                     list.add(newWord)
                     usedWordsList.add(newWord)
 
-                    val solve = solve(list, secondWord, usedWordsList, solutionList).toMutableList()
+                    val solve = solve(list, secondWord, usedWordsList).toMutableList()
                     println(solve)
                     if (solve.isEmpty()) {
                         list.remove(newWord)
@@ -424,7 +424,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         return counter
     }
 
-    private fun newGameClick() {
+    fun newGameClick(view: View) {
 
         drawerLayout?.closeDrawer(drawerLeft)
         minWords = stepRangeBar.selectedMinValue as Int
@@ -434,13 +434,63 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     }
 
+    fun startOverClick(view: View) {
+
+        for(i in gameWordsList.size - 2 downTo 1){
+            gameWordsList.removeAt(i)
+        }
+        gameWordsList.add(1,"")
+        midWordAdapter?.notifyAdapterOfWin(false)
+
+    }
+
+
+    fun solveClick(view: View) {
+
+
+        gameWordsList.clear()
+        gameWordsList.addAll(solutionList)
+        midWordAdapter?.notifyAdapterOfWin(true)
+
+    }
+
+    private fun hintClick(view: View) {
+
+
+    }
+
+    fun showHideClick(view: View) {
+
+        var showTextView = findViewById<TextView>(R.id.showNumStepsDrawerButton)
+        showSolutionSteps = !showSolutionSteps
+        //get show hide from shared pref
+        if (showSolutionSteps) {
+            val text = SpannableString(
+                getString(
+                    R.string.show_number_of_steps,
+                    (solutionList.size - 1).toString()
+                )
+            )
+            text.setSpan(ForegroundColorSpan(ContextCompat.getColor(this,R.color.colorPrimary)), 0, 4, 0)
+            showTextView.text = text
+        } else {
+
+            val text = SpannableString(
+                getString(R.string.hide_number_of_steps)
+            )
+            text.setSpan(ForegroundColorSpan(ContextCompat.getColor(this,R.color.colorPrimary)), 0, 4, 0)
+            showTextView.text = text
+        }
+
+    }
+
 
     override fun onAddWord(word: String, position: Int) {
 
 
         var hintPos: Int = when {
-            isNeighbors(word, addWords[position + 1]) -> 1
-            isNeighbors(word, addWords[position - 1]) -> -1
+            isNeighbors(word, gameWordsList[position + 1]) -> 1
+            isNeighbors(word, gameWordsList[position - 1]) -> -1
             else -> {
                 Toast.makeText(
                     this,
@@ -463,17 +513,17 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         if (hintPos == 1) {
             newWordPosition += hintPos
         }
-        addWords.add(newWordPosition, word)
+        gameWordsList.add(newWordPosition, word)
 
 
-        val testWord = addWords[newWordPosition - hintPos * 2]
+        val testWord = gameWordsList[newWordPosition - hintPos * 2]
 
         if (isNeighbors(word, testWord)) {
-            addWords.removeAt(newWordPosition - hintPos) //remove the next blank word
-            midWordAdapter?.notifyAdapterOfWin()
+            gameWordsList.removeAt(newWordPosition - hintPos) //remove the next blank word
+            midWordAdapter?.notifyAdapterOfWin(true)
 
 
-            if (solutionList.size < addWords.size)
+            if (solutionList.size < gameWordsList.size)
                 Toast.makeText(
                     this,
                     "way to go! But... there is a shorter solution",
@@ -490,10 +540,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
 
     override fun onRemoveWord(position: Int, editWordPosition: Int) {
-        if (position == 0 || position == addWords.size - 1) //should not be able to reach this statement
+        if (position == 0 || position == gameWordsList.size - 1) //should not be able to reach this statement
             return
 
-        addWords[position] = ""
+        gameWordsList[position] = ""
 
         if (position != editWordPosition) {
             var hintPos = 1
@@ -503,10 +553,21 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             val to = max(position, editWordPosition + hintPos)
 
             for (i in to downTo from)
-                addWords.removeAt(i)
+                gameWordsList.removeAt(i)
         }
         midWordAdapter?.notifyDataSetChanged()
     }
+
+
+/*    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.newGameDrawerButton -> newGameClick()
+            R.id.solveDrawerButton -> solveClick()
+            R.id.hintDrawerButton -> hintClick()
+            R.id.showNumStepsDrawerButton -> showHideClick()
+
+        }
+    }*/
 
 
 }

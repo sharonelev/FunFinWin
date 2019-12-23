@@ -9,10 +9,9 @@
     <string name="start_over">Start Over</string>
     <string name="hint">Hint</string>
     <string name="solve">Solve</string>
-    <string name="show">Show</string>
-    <string name="hide">Hide</string>
-    <string name="hide_number_of_steps"> solution number of steps</string>
-    <string name="show_number_of_steps"> solution number of steps:</string>
+    <string name="show"></string>
+    <string name="hide_number_of_steps"><u>Hide</u> solution number of steps</string>
+    <string name="show_number_of_steps"><u>Show</u> solution number of steps: %1s</string>
     <string name="number_of_letters">Set number of letters:</string>
     <string name="min_max_steps">Set number of steps range:</string>
 </resources>
