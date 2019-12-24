@@ -1,12 +1,13 @@
 package com.appsbysha.funfinwin
 
 import android.content.Context
+import android.content.Intent
 import android.database.SQLException
+import android.os.AsyncTask
 import android.os.Bundle
-import android.os.CountDownTimer
+import android.os.Handler
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -162,65 +163,105 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     private fun createGame() {
 
-        var listCreated = false
 
-        progressBar.visibility = View.VISIBLE
-        progressBar.bringToFront()
-
-        do {
-            println(solutionList)
+        var solveAsync: SolveAsync = SolveAsync()
+        solveAsync.execute()
 
 
-            do {
-                firstWord = "drip" //dbHelper.get_word(numOfLetters)
-                Log.i("firstWord", firstWord)
-                lastWord = "crab"//dbHelper.get_word(numOfLetters)
-                Log.i("lastWord", lastWord)
-            } while (isNeighbors(firstWord, lastWord) && firstWord != lastWord)
-
-            gameWordsList = mutableListOf(firstWord, "", lastWord)
-
-            //todo if computing more than 10 seconds, random new words
-            val timer = object : CountDownTimer(10000, 1000) {
-                override fun onTick(millisUntilFinished: Long) {
-                    Log.i("timer", millisUntilFinished.toString())
+        var handler = Handler()
+        handler.postDelayed(
+            {
+                if (solveAsync.status == AsyncTask.Status.RUNNING) {
+                    shouldStop = true
+                    Log.i("createGame", "solve timeout")
                 }
-
-                override fun onFinish() {
-                    if (!listCreated) {
-                        shouldStop = true
-                    }
-                }
-            }
-            timer.start()
-            solutionList.clear()
-            //   solutionList =
-            solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord))
-            //testList = solve(mutableListOf("dame"), "onyx", mutableListOf("dame"))
-
-        } while (solutionList.isEmpty() || solutionList.size - 1 > maxWords || solutionList.size - 1 < minWords)
-
-        listCreated = true
-        shouldStop = false
+            }, 10000
 
 
-        midWordAdapter = MidWordAdapter(gameWordsList, numOfLetters, this, this, this)
-        gameWordsRecyclerView.layoutManager = LinearLayoutManager(this)
+        )
 
-        gameWordsRecyclerView.adapter = midWordAdapter
-
-
-        progressBar.visibility = View.GONE
 
     }
 
+    inner class SolveAsync : AsyncTask<Void, Void, Boolean>() {
 
-    private fun solve(
+
+        override fun doInBackground(vararg params: Void?): Boolean {
+            Log.i("createGame", "new async task")
+
+            do {
+
+                do {
+                    firstWord = dbHelper.get_word(numOfLetters)
+                    Log.i("firstWord", firstWord)
+                    lastWord = dbHelper.get_word(numOfLetters)
+                    Log.i("lastWord", lastWord)
+                } while (isNeighbors(firstWord, lastWord) && firstWord != lastWord)
+
+                Log.i("createGame", "newWords")
+
+                solutionList.clear()
+                gameWordsList = mutableListOf(firstWord, "", lastWord)
+                shouldStop = false
+                solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord))
+
+
+                println(solutionList)
+                if(shouldStop) {
+                    Log.i("createGame", "should stop")
+                    return false
+                }
+            } while (solutionList.isEmpty() || solutionList.size - 1 > maxWords || solutionList.size - 1 < minWords)
+
+            return true
+        }
+
+
+        override fun onCancelled() {
+            super.onCancelled()
+            Log.i("createGame", "onCancelled")
+
+        }
+
+        override fun onPreExecute() {
+            Log.i("createGame", "onPreExecute")
+
+            super.onPreExecute()
+            progressBar.visibility = View.VISIBLE
+            progressBar.bringToFront()
+
+        }
+
+        override fun onPostExecute(solved: Boolean) {
+            super.onPostExecute(solved)
+            Log.i("createGame", "onPostExecute")
+
+            if(solved) {
+                midWordAdapter = MidWordAdapter(
+                    gameWordsList,
+                    numOfLetters,
+                    baseContext,
+                    this@MainActivity,
+                    this@MainActivity
+                )
+                gameWordsRecyclerView.layoutManager = LinearLayoutManager(baseContext)
+
+                gameWordsRecyclerView.adapter = midWordAdapter
+                progressBar.visibility = View.GONE
+
+            }
+            else
+                createGame()
+
+        }
+    }
+
+
+    fun solve(
         list: MutableList<String>,
         secondWord: String,
         usedWordsList: MutableList<String>
     ): MutableList<String> {
-
 
         val firstWord = list.last()
         val firstWordArray: CharArray = firstWord.toCharArray()
@@ -436,11 +477,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     fun startOverClick(view: View) {
 
-        for(i in gameWordsList.size - 2 downTo 1){
+        for (i in gameWordsList.size - 2 downTo 1) {
             gameWordsList.removeAt(i)
         }
-        gameWordsList.add(1,"")
+        gameWordsList.add(1, "")
         midWordAdapter?.notifyAdapterOfWin(false)
+        drawerLayout?.closeDrawer(drawerLeft)
 
     }
 
@@ -451,6 +493,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         gameWordsList.clear()
         gameWordsList.addAll(solutionList)
         midWordAdapter?.notifyAdapterOfWin(true)
+        drawerLayout?.closeDrawer(drawerLeft)
 
     }
 
@@ -471,14 +514,24 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                     (solutionList.size - 1).toString()
                 )
             )
-            text.setSpan(ForegroundColorSpan(ContextCompat.getColor(this,R.color.colorPrimary)), 0, 4, 0)
+            text.setSpan(
+                ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)),
+                0,
+                4,
+                0
+            )
             showTextView.text = text
         } else {
 
             val text = SpannableString(
                 getString(R.string.hide_number_of_steps)
             )
-            text.setSpan(ForegroundColorSpan(ContextCompat.getColor(this,R.color.colorPrimary)), 0, 4, 0)
+            text.setSpan(
+                ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)),
+                0,
+                4,
+                0
+            )
             showTextView.text = text
         }
 
@@ -557,17 +610,5 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         }
         midWordAdapter?.notifyDataSetChanged()
     }
-
-
-/*    override fun onClick(v: View?) {
-        when (v?.id) {
-            R.id.newGameDrawerButton -> newGameClick()
-            R.id.solveDrawerButton -> solveClick()
-            R.id.hintDrawerButton -> hintClick()
-            R.id.showNumStepsDrawerButton -> showHideClick()
-
-        }
-    }*/
-
 
 }
