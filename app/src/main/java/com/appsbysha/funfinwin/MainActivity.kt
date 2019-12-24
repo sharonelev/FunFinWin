@@ -1,11 +1,12 @@
 package com.appsbysha.funfinwin
 
 import android.content.Context
-import android.content.Intent
+import android.content.SharedPreferences
 import android.database.SQLException
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Handler
+import android.preference.PreferenceManager
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
@@ -36,7 +37,8 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private var numOfLetters = 0
     private var minWords = 3
     private var maxWords = 10
-    private var shouldStop = false
+    private var MIN_LIMIT = 6
+    private var timeout = false
 
     lateinit var gameWordsRecyclerView: RecyclerView
     var midWordAdapter: MidWordAdapter? = null
@@ -51,12 +53,19 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private var showSolutionSteps = true
     private var previousNumView: TextView? = null
 
+    private lateinit var sharedPrefs: SharedPreferences
+    private val NUM_OF_LETTERS_SETTING = "num_of_letters"
+    private val MIN_SETTING = "min_steps"
+    private val MAX_SETTING = "max_steps"
+    private val SHOW_SETTING = "show_solution_min_steps"
+
+
     var dbHelper: DictionaryDbHelper = DictionaryDbHelper(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
         toolbar = findViewById(R.id.toolBar)
         drawerLayout = findViewById(R.id.drawerLayout)
         drawerLeft = findViewById(R.id.leftDrawer)
@@ -70,10 +79,15 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         gameWordsRecyclerView = findViewById(R.id.wordsRecyclerView)
         stepRangeBar = findViewById(R.id.stepsRangePicker)
         stepRangeBar.setRangeValues(3, 20)
-        stepRangeBar.selectedMinValue = 3
-        stepRangeBar.selectedMaxValue = 10
-        //numOfLettersSpinner = findViewById(R.id.numOfLettersSpinner)
-        // numOfLettersSpinner.setSelection(1) // default 4
+        stepRangeBar.setOnRangeSeekBarChangeListener { bar, minValue, maxValue ->
+            if (minValue > MIN_LIMIT) {
+                stepRangeBar.selectedMinValue = MIN_LIMIT
+            }
+            var editor = sharedPrefs.edit()
+            editor.putInt(MIN_SETTING, minValue)
+            editor.putInt(MAX_SETTING, maxValue)
+            editor.apply()
+        }
 
 
         var threeTextview = findViewById<TextView>(R.id.threeLetters)
@@ -83,11 +97,24 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         var fiveTextview = findViewById<TextView>(R.id.fiveLetters)
         fiveTextview.setOnClickListener { numOfLettersClick(fiveTextview) }
 
-        numOfLetters = 4
-        numOfLettersClick(fourTextview)
-        minWords = stepRangeBar.absoluteMinValue as Int
-        maxWords = stepRangeBar.absoluteMaxValue as Int
+        setSettings()
 
+    }
+
+    private fun setSettings() {
+        //Shared preferences
+
+        numOfLetters = sharedPrefs.getInt(NUM_OF_LETTERS_SETTING, 4)
+        when(numOfLetters){
+            3->numOfLettersClick( findViewById(R.id.threeLetters))
+            4->numOfLettersClick( findViewById(R.id.fourLetters))
+            5->numOfLettersClick( findViewById(R.id.fiveLetters))
+        }
+        showSolutionSteps = sharedPrefs.getBoolean(SHOW_SETTING, false)
+        minWords = sharedPrefs.getInt(MIN_SETTING, 3)
+        stepRangeBar.selectedMinValue = minWords
+        maxWords = sharedPrefs.getInt(MAX_SETTING, 10)
+        stepRangeBar.selectedMaxValue = maxWords
 
     }
 
@@ -97,6 +124,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
         view.background = getDrawable(R.drawable.settings_number_background)
         numOfLetters = view.text.toString().toInt()
+        val editor = sharedPrefs.edit()
+        editor.putInt(NUM_OF_LETTERS_SETTING, numOfLetters)
+        editor.apply()
         previousNumView = view
 
 
@@ -164,7 +194,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun createGame() {
 
 
-        var solveAsync: SolveAsync = SolveAsync()
+        var solveAsync = SolveAsync()
         solveAsync.execute()
 
 
@@ -172,7 +202,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         handler.postDelayed(
             {
                 if (solveAsync.status == AsyncTask.Status.RUNNING) {
-                    shouldStop = true
+                    timeout = true
                     Log.i("createGame", "solve timeout")
                 }
             }, 10000
@@ -202,13 +232,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
                 solutionList.clear()
                 gameWordsList = mutableListOf(firstWord, "", lastWord)
-                shouldStop = false
+                timeout = false
                 solve(mutableListOf(firstWord), lastWord, mutableListOf(firstWord))
 
 
                 println(solutionList)
-                if(shouldStop) {
-                    Log.i("createGame", "should stop")
+                if (timeout) {
+                    Log.i("createGame", "timeout")
                     return false
                 }
             } while (solutionList.isEmpty() || solutionList.size - 1 > maxWords || solutionList.size - 1 < minWords)
@@ -236,7 +266,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             super.onPostExecute(solved)
             Log.i("createGame", "onPostExecute")
 
-            if(solved) {
+            if (solved) {
                 midWordAdapter = MidWordAdapter(
                     gameWordsList,
                     numOfLetters,
@@ -249,8 +279,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 gameWordsRecyclerView.adapter = midWordAdapter
                 progressBar.visibility = View.GONE
 
-            }
-            else
+            } else
                 createGame()
 
         }
@@ -269,7 +298,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
         for (index in 0 until numOfLetters) {
 
-            if (shouldStop)
+            if (timeout)
                 return mutableListOf()
 
             if (firstWordArray[index] == secondWordArray[index])
@@ -345,12 +374,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             if (firstWordArray[index] == secondWordArray[index])
                 continue
 
-            if (shouldStop)
+            if (timeout)
                 return mutableListOf()
 
             for (i in 'a'..'z') {
 
-                if (shouldStop)
+                if (timeout)
                     return mutableListOf()
 
                 if (i == secondWordArray[index] || i == firstWordArray[index])
@@ -506,6 +535,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
         var showTextView = findViewById<TextView>(R.id.showNumStepsDrawerButton)
         showSolutionSteps = !showSolutionSteps
+        var editor = sharedPrefs.edit()
+        editor.putBoolean(SHOW_SETTING, showSolutionSteps)
+        editor.apply()
         //get show hide from shared pref
         if (showSolutionSteps) {
             val text = SpannableString(

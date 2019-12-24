@@ -167,7 +167,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:absoluteMaxValue="20"
-                app:absoluteMinValue="3"
+                app:absoluteMinValue="6"
                 app:textAboveThumbsColor="@color/colorPrimary" />
     </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>
