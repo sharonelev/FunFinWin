@@ -1,5 +1,6 @@
 package com.appsbysha.funfinwin
 
+import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.database.SQLException
@@ -44,9 +45,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     var midWordAdapter: MidWordAdapter? = null
     private var solutionList: MutableList<String> = mutableListOf()
     private lateinit var stepRangeBar: RangeSeekBar<Int>
-    private lateinit var progressBar: ProgressBar
+    private  var progressBar: Dialog? =null
     var firstWord: String = ""
     var lastWord: String = ""
+    lateinit var showTextView: TextView
 
     lateinit var gameWordsList: MutableList<String>
 
@@ -71,11 +73,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         drawerLeft = findViewById(R.id.leftDrawer)
         setupToolbar()
         setupDrawerToggle()
-        showHideClick(findViewById(R.id.showNumStepsDrawerButton))
+        showTextView = findViewById(R.id.showNumStepsDrawerButton)
+
+        showHideClick(showTextView)
 
         attachDB()
 
-        progressBar = findViewById(R.id.createGameProgressBar)
+        progressBar = UiUtils.createProgressDialog(this)
         gameWordsRecyclerView = findViewById(R.id.wordsRecyclerView)
         stepRangeBar = findViewById(R.id.stepsRangePicker)
         stepRangeBar.setRangeValues(3, 20)
@@ -105,10 +109,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         //Shared preferences
 
         numOfLetters = sharedPrefs.getInt(NUM_OF_LETTERS_SETTING, 4)
-        when(numOfLetters){
-            3->numOfLettersClick( findViewById(R.id.threeLetters))
-            4->numOfLettersClick( findViewById(R.id.fourLetters))
-            5->numOfLettersClick( findViewById(R.id.fiveLetters))
+        when (numOfLetters) {
+            3 -> numOfLettersClick(findViewById(R.id.threeLetters))
+            4 -> numOfLettersClick(findViewById(R.id.fourLetters))
+            5 -> numOfLettersClick(findViewById(R.id.fiveLetters))
         }
         showSolutionSteps = sharedPrefs.getBoolean(SHOW_SETTING, false)
         minWords = sharedPrefs.getInt(MIN_SETTING, 3)
@@ -257,9 +261,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             Log.i("createGame", "onPreExecute")
 
             super.onPreExecute()
-            progressBar.visibility = View.VISIBLE
-            progressBar.bringToFront()
-
+            progressBar?.show()
         }
 
         override fun onPostExecute(solved: Boolean) {
@@ -277,7 +279,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 gameWordsRecyclerView.layoutManager = LinearLayoutManager(baseContext)
 
                 gameWordsRecyclerView.adapter = midWordAdapter
-                progressBar.visibility = View.GONE
+progressBar?.hide()
+                if (showSolutionSteps)
+                    setShowStepsText()
 
             } else
                 createGame()
@@ -533,26 +537,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     fun showHideClick(view: View) {
 
-        var showTextView = findViewById<TextView>(R.id.showNumStepsDrawerButton)
         showSolutionSteps = !showSolutionSteps
         var editor = sharedPrefs.edit()
         editor.putBoolean(SHOW_SETTING, showSolutionSteps)
         editor.apply()
         //get show hide from shared pref
         if (showSolutionSteps) {
-            val text = SpannableString(
-                getString(
-                    R.string.show_number_of_steps,
-                    (solutionList.size - 1).toString()
-                )
-            )
-            text.setSpan(
-                ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)),
-                0,
-                4,
-                0
-            )
-            showTextView.text = text
+            setShowStepsText()
         } else {
 
             val text = SpannableString(
@@ -567,6 +558,22 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             showTextView.text = text
         }
 
+    }
+
+    private fun setShowStepsText() {
+        val text = SpannableString(
+            getString(
+                R.string.show_number_of_steps,
+                (solutionList.size - 1).toString()
+            )
+        )
+        text.setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(this, R.color.colorPrimary)),
+            0,
+            4,
+            0
+        )
+        showTextView.text = text
     }
 
 

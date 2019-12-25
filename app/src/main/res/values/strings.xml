@@ -14,4 +14,5 @@
     <string name="show_number_of_steps"><u>Show</u> solution number of steps: %1s</string>
     <string name="number_of_letters">Set number of letters:</string>
     <string name="min_max_steps">Set number of steps range:</string>
+    <string name="progress_message">"Please wait while creating\na Fun-Fin-Win game for you"</string>
 </resources>
