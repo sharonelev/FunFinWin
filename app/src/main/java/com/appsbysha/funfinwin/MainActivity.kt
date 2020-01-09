@@ -1,5 +1,6 @@
 package com.appsbysha.funfinwin
 
+import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
@@ -45,7 +46,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     var midWordAdapter: MidWordAdapter? = null
     private var solutionList: MutableList<String> = mutableListOf()
     private lateinit var stepRangeBar: RangeSeekBar<Int>
-    private  var progressBar: Dialog? =null
+    private var progressBar: Dialog? = null
     var firstWord: String = ""
     var lastWord: String = ""
     lateinit var showTextView: TextView
@@ -68,15 +69,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
+
         toolbar = findViewById(R.id.toolBar)
         drawerLayout = findViewById(R.id.drawerLayout)
         drawerLeft = findViewById(R.id.leftDrawer)
         setupToolbar()
         setupDrawerToggle()
         showTextView = findViewById(R.id.showNumStepsDrawerButton)
-
-        showHideClick(showTextView)
-
         attachDB()
 
         progressBar = UiUtils.createProgressDialog(this)
@@ -115,6 +114,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             5 -> numOfLettersClick(findViewById(R.id.fiveLetters))
         }
         showSolutionSteps = sharedPrefs.getBoolean(SHOW_SETTING, false)
+        applyShowHide()
         minWords = sharedPrefs.getInt(MIN_SETTING, 3)
         stepRangeBar.selectedMinValue = minWords
         maxWords = sharedPrefs.getInt(MAX_SETTING, 10)
@@ -139,7 +139,8 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     override fun onResume() {
         super.onResume()
-        createGame()
+        if (solutionList.isEmpty())
+            createGame()
 
     }
 
@@ -206,7 +207,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         handler.postDelayed(
             {
                 if (solveAsync.status == AsyncTask.Status.RUNNING) {
-                    timeout = true
+                    //                 timeout = true
                     Log.i("createGame", "solve timeout")
                 }
             }, 10000
@@ -226,11 +227,11 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             do {
 
                 do {
-                    firstWord = dbHelper.get_word(numOfLetters)
+                    firstWord = "cyan"//dbHelper.get_word(numOfLetters)
                     Log.i("firstWord", firstWord)
-                    lastWord = dbHelper.get_word(numOfLetters)
+                    lastWord = "pugh"//dbHelper.get_word(numOfLetters)
                     Log.i("lastWord", lastWord)
-                } while (isNeighbors(firstWord, lastWord) && firstWord != lastWord)
+                } while (haveMutualLetter(firstWord, lastWord))
 
                 Log.i("createGame", "newWords")
 
@@ -279,7 +280,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 gameWordsRecyclerView.layoutManager = LinearLayoutManager(baseContext)
 
                 gameWordsRecyclerView.adapter = midWordAdapter
-progressBar?.hide()
+                progressBar?.hide()
                 if (showSolutionSteps)
                     setShowStepsText()
 
@@ -336,6 +337,7 @@ progressBar?.hide()
                 for (j in 0 until usedWordsList.size) {
                     if (newWord == usedWordsList[j])
                         usedWord = true
+                    break
                 }
 
                 if (usedWord)
@@ -358,6 +360,9 @@ progressBar?.hide()
                 if (solve.isEmpty())
                     list.remove(newWord)
                 else {
+                    if (newWord == "pean") {
+                        println()
+                    }
                     usedWordsList.remove(newWord)
                     var p = solve.indexOf(firstWord)
                     if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
@@ -393,6 +398,10 @@ progressBar?.hide()
                 newWordArray[index] = i
                 val newWord = String(newWordArray)
 
+                if (newWord == "pean") {
+                    println()
+                }
+
                 if (list.size > 1) {
                     //don't swap a letter that was just swapped
                     var twoWordsBackArray = list[list.size - 2]
@@ -411,15 +420,33 @@ progressBar?.hide()
 
                 } else {
 
+                    if (!isWord(newWord))
+                        continue
+
+
                     var usedWord = false
                     for (j in 0 until usedWordsList.size) {
-                        if (newWord == usedWordsList[j])
+                        if (newWord == usedWordsList[j]) {
                             usedWord = true
+                            break
+                        }
                     }
                     if (usedWord)
                         continue
 
-                    if (!isWord(newWord))
+                    var neighbour = false
+                    for (k in 0 until list.size - 2) {
+                        if (isNeighbors(
+                                newWord,
+                                list[k]
+                            )
+                        ) //if the new word is a neighbour of an earlier word in the list, it musn't calculate and will reach it later
+                        {
+                            neighbour = true
+                            break
+                        }
+                    }
+                    if (neighbour)
                         continue
 
                     if (solutionList.isNotEmpty() && list.size + calcOptimalMin(
@@ -431,13 +458,19 @@ progressBar?.hide()
 
                     list.add(newWord)
                     usedWordsList.add(newWord)
-
+                    if (newWord == "pean") {
+                        println()
+                    }
                     val solve = solve(list, secondWord, usedWordsList).toMutableList()
                     println(solve)
+                    if (newWord == "pean") {
+                        println()
+                    }
                     if (solve.isEmpty()) {
                         list.remove(newWord)
 
                     } else {
+
                         usedWordsList.remove(newWord) //the new word leads to solution even if not optimal
 
                         var p = solve.indexOf(firstWord)
@@ -486,6 +519,20 @@ progressBar?.hide()
             }
         }
         return true
+    }
+
+    private fun haveMutualLetter(
+        firstWord: String,
+        secondWord: String
+    ): Boolean {
+        val firstWordArray = firstWord.toCharArray()
+        val secondWordArray = secondWord.toCharArray()
+        for (index in 0 until numOfLetters) {
+            if (firstWordArray[index] == (secondWordArray[index])) {
+                return true
+            }
+        }
+        return false
     }
 
 
@@ -538,6 +585,13 @@ progressBar?.hide()
     fun showHideClick(view: View) {
 
         showSolutionSteps = !showSolutionSteps
+
+        applyShowHide()
+
+    }
+
+    fun applyShowHide() {
+
         var editor = sharedPrefs.edit()
         editor.putBoolean(SHOW_SETTING, showSolutionSteps)
         editor.apply()
@@ -557,7 +611,6 @@ progressBar?.hide()
             )
             showTextView.text = text
         }
-
     }
 
     private fun setShowStepsText() {
@@ -612,17 +665,21 @@ progressBar?.hide()
 
         if (isNeighbors(word, testWord)) {
             gameWordsList.removeAt(newWordPosition - hintPos) //remove the next blank word
-            midWordAdapter?.notifyAdapterOfWin(true)
 
+            hideKeyboard(this, currentFocus)
 
-            if (solutionList.size < gameWordsList.size)
+            if (solutionList.size < gameWordsList.size) {
                 Toast.makeText(
                     this,
                     "way to go! But... there is a shorter solution",
                     Toast.LENGTH_SHORT
                 ).show()
-            else
+                midWordAdapter?.notifyAdapterOfWin(false)
+            } else {
                 Toast.makeText(this, "way to go!", Toast.LENGTH_SHORT).show()
+                midWordAdapter?.notifyAdapterOfWin(true)
+
+            }
         } else {
             midWordAdapter?.notifyDataSetChanged()
         }
@@ -648,6 +705,19 @@ progressBar?.hide()
                 gameWordsList.removeAt(i)
         }
         midWordAdapter?.notifyDataSetChanged()
+    }
+
+
+    /**
+     * Hide keyboard
+     */
+    private fun hideKeyboard(
+        context: Context,
+        view: View?
+    ) {
+        val imm =
+            context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
 }

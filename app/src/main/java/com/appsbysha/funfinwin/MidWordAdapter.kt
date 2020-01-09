@@ -74,7 +74,7 @@ class MidWordAdapter(
             newLetter.layoutParams = params
             newLetter.gravity =
                 android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
-            newLetter.textSize = UiUtils.pixelsToSp(context, 5f)
+            newLetter.textSize = UiUtils.pixelsToSp(context, 8f)
             if (word.isEmpty()) {
                 editWordPosition = position
                 newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
