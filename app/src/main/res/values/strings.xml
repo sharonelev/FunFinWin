@@ -22,5 +22,5 @@
     <string name="not_adjacent">Not adjacent</string>
     <string name="pssst">pssst…&#160;</string>
     <string name="is_a_valid_word">&#160;is a valid word</string>
-    <string name="right_track">You are on the right track!</string>
+    <string name="right_track">You are on the right track! (based on the top and bottom step)</string>
 </resources>
