@@ -207,7 +207,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         handler.postDelayed(
             {
                 if (solveAsync.status == AsyncTask.Status.RUNNING) {
-                    //                 timeout = true
+                    timeout = true
                     Log.i("createGame", "solve timeout")
                 }
             }, 10000
@@ -227,9 +227,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             do {
 
                 do {
-                    firstWord = "cyan"//dbHelper.get_word(numOfLetters)
+                    firstWord = dbHelper.get_word(numOfLetters)
                     Log.i("firstWord", firstWord)
-                    lastWord = "pugh"//dbHelper.get_word(numOfLetters)
+                    lastWord = dbHelper.get_word(numOfLetters)
                     Log.i("lastWord", lastWord)
                 } while (haveMutualLetter(firstWord, lastWord))
 
@@ -398,10 +398,6 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 newWordArray[index] = i
                 val newWord = String(newWordArray)
 
-                if (newWord == "pean") {
-                    println()
-                }
-
                 if (list.size > 1) {
                     //don't swap a letter that was just swapped
                     var twoWordsBackArray = list[list.size - 2]
@@ -458,14 +454,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
                     list.add(newWord)
                     usedWordsList.add(newWord)
-                    if (newWord == "pean") {
-                        println()
-                    }
+
                     val solve = solve(list, secondWord, usedWordsList).toMutableList()
                     println(solve)
-                    if (newWord == "pean") {
-                        println()
-                    }
+
                     if (solve.isEmpty()) {
                         list.remove(newWord)
 
