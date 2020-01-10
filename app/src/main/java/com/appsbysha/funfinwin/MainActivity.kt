@@ -759,14 +759,8 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             midWordAdapter?.notifyDataSetChanged()
 
 
-        } else {
-            if (position < gameWordsList.size / 2) {
-                for (i in position-1 downTo 1)
-                    gameWordsList.removeAt(i)
-            } else {
-                for (i in gameWordsList.size - 1 downTo position+1)
-                    gameWordsList.removeAt(i)
-            }
+        }
+        else {
             midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.NOT_WIN)
         }
 

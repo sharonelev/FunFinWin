@@ -54,7 +54,6 @@ class MidWordAdapter(
         holder.rowLayout.visibility = View.VISIBLE
         holder.linearLayout.removeAllViews()
         holder.removeWord.setOnClickListener(holder)
-        holder.removeWord.visibility = View.INVISIBLE
         holder.stepNum.text = position.toString()
         if(position == 0) {
             holder.stepNum.visibility = View.INVISIBLE
@@ -64,10 +63,14 @@ class MidWordAdapter(
 
 
 
-        if (position != 0 && position != itemCount - 1) {
-            if (isWin != gameStat.WIN)
-                holder.removeWord.visibility = View.VISIBLE
+        if (position == 0 || position == itemCount - 1 || isWin == gameStat.WIN) {
+                holder.removeWord.visibility = View.INVISIBLE
         }
+        else
+            holder.removeWord.visibility = View.VISIBLE
+
+
+
         val params = LinearLayout.LayoutParams(
             UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context),
             UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context)
