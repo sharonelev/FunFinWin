@@ -37,15 +37,6 @@
                 app:layout_constraintTop_toBottomOf="@id/toolBar" />
 
 
-<!--        <ProgressBar
-
-                android:id="@+id/createGameProgressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />-->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -92,7 +83,7 @@
                 android:id="@+id/hintDrawerButton"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-
+android:onClick="hintClick"
                 android:text="@string/hint" />
 
         <TextView
@@ -167,7 +158,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:absoluteMaxValue="20"
-                app:absoluteMinValue="6"
+                app:absoluteMinValue="4"
                 app:textAboveThumbsColor="@color/colorPrimary" />
     </LinearLayout>
 </androidx.drawerlayout.widget.DrawerLayout>

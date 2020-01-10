@@ -26,7 +26,12 @@ class MidWordAdapter(
     var removeWordListener = mRemoveWordListener
 
 
-    var isWin: Boolean = false
+    enum class gameStat{
+      WIN,
+        SHORTER,
+        NOT_WIN
+    }
+    var isWin: gameStat = gameStat.NOT_WIN
     var editWordPosition = 1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
@@ -51,10 +56,16 @@ class MidWordAdapter(
         holder.removeWord.setOnClickListener(holder)
         holder.removeWord.visibility = View.INVISIBLE
         holder.stepNum.text = position.toString()
+        if(position == 0) {
+            holder.stepNum.visibility = View.INVISIBLE
+        }
+        else
+            holder.stepNum.visibility = View.VISIBLE
+
 
 
         if (position != 0 && position != itemCount - 1) {
-            if (!isWin)
+            if (isWin != gameStat.WIN)
                 holder.removeWord.visibility = View.VISIBLE
         }
         val params = LinearLayout.LayoutParams(
@@ -134,7 +145,7 @@ class MidWordAdapter(
 
     }
 
-    fun notifyAdapterOfWin(win: Boolean) { //... your custom logic
+    fun notifyAdapterOfWin(win: gameStat) { //... your custom logic
 
         isWin = win
         notifyDataSetChanged()
@@ -203,7 +214,7 @@ class MidWordAdapter(
         override fun onClick(v: View?) {
             when (v?.id) {
                 R.id.removeWord -> {
-                    removeWordListener.onRemoveWord(adapterPosition, editWordPosition)
+                    removeWordListener.onRemoveWord(adapterPosition, editWordPosition, isWin)
                 }
             }
         }
@@ -218,7 +229,7 @@ class MidWordAdapter(
 
 
     interface RemoveWordListener {
-        fun onRemoveWord(position: Int, editWordPosition: Int)
+        fun onRemoveWord(position: Int, editWordPosition: Int, win: gameStat)
     }
 
 }

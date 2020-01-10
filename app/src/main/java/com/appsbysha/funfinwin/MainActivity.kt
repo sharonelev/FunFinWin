@@ -3,6 +3,7 @@ package com.appsbysha.funfinwin
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.database.SQLException
 import android.os.AsyncTask
@@ -12,6 +13,7 @@ import android.preference.PreferenceManager
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
@@ -19,6 +21,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -37,7 +40,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     var drawerLayout: DrawerLayout? = null
     private lateinit var toolbar: androidx.appcompat.widget.Toolbar
     private var numOfLetters = 0
-    private var minWords = 3
+    private var minWords = 4
     private var maxWords = 10
     private var MIN_LIMIT = 6
     private var timeout = false
@@ -81,7 +84,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         progressBar = UiUtils.createProgressDialog(this)
         gameWordsRecyclerView = findViewById(R.id.wordsRecyclerView)
         stepRangeBar = findViewById(R.id.stepsRangePicker)
-        stepRangeBar.setRangeValues(3, 20)
+        stepRangeBar.setRangeValues(4, 20)
         stepRangeBar.setOnRangeSeekBarChangeListener { bar, minValue, maxValue ->
             if (minValue > MIN_LIMIT) {
                 stepRangeBar.selectedMinValue = MIN_LIMIT
@@ -115,7 +118,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         }
         showSolutionSteps = sharedPrefs.getBoolean(SHOW_SETTING, false)
         applyShowHide()
-        minWords = sharedPrefs.getInt(MIN_SETTING, 3)
+        minWords = sharedPrefs.getInt(MIN_SETTING, 4)
         stepRangeBar.selectedMinValue = minWords
         maxWords = sharedPrefs.getInt(MAX_SETTING, 10)
         stepRangeBar.selectedMaxValue = maxWords
@@ -360,9 +363,6 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 if (solve.isEmpty())
                     list.remove(newWord)
                 else {
-                    if (newWord == "pean") {
-                        println()
-                    }
                     usedWordsList.remove(newWord)
                     var p = solve.indexOf(firstWord)
                     if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
@@ -540,38 +540,60 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     fun newGameClick(view: View) {
 
         drawerLayout?.closeDrawer(drawerLeft)
+        newGame()
+
+    }
+
+    private fun newGame() {
         minWords = stepRangeBar.selectedMinValue as Int
         maxWords = stepRangeBar.selectedMaxValue as Int
         solutionList = mutableListOf()
         createGame()
-
     }
 
     fun startOverClick(view: View) {
 
+        startOver()
+        drawerLayout?.closeDrawer(drawerLeft)
+
+    }
+
+    private fun startOver() {
         for (i in gameWordsList.size - 2 downTo 1) {
             gameWordsList.removeAt(i)
         }
         gameWordsList.add(1, "")
-        midWordAdapter?.notifyAdapterOfWin(false)
-        drawerLayout?.closeDrawer(drawerLeft)
-
+        midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.NOT_WIN)
     }
 
 
     fun solveClick(view: View) {
-
-
         gameWordsList.clear()
         gameWordsList.addAll(solutionList)
-        midWordAdapter?.notifyAdapterOfWin(true)
+        midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.WIN)
         drawerLayout?.closeDrawer(drawerLeft)
 
     }
 
-    private fun hintClick(view: View) {
+    fun hintClick(view: View) {
+        drawerLayout?.closeDrawer(drawerLeft)
+        hint()
+    }
 
-
+    private fun hint() {
+        if (gameWordsList[1] != solutionList[1]) {
+            buildAlertDialog(getString(R.string.pssst) + solutionList[1] + getString(R.string.is_a_valid_word))
+            return
+        }
+        if (gameWordsList[gameWordsList.size - 2] != solutionList[solutionList.size - 2]) {
+            buildAlertDialog(
+                getString(R.string.pssst) + solutionList[solutionList.size - 2] + getString(
+                    R.string.is_a_valid_word
+                )
+            )
+            return
+        }
+        buildAlertDialog(getString(R.string.right_track))
     }
 
     fun showHideClick(view: View) {
@@ -582,7 +604,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     }
 
-    fun applyShowHide() {
+    private fun applyShowHide() {
 
         var editor = sharedPrefs.edit()
         editor.putBoolean(SHOW_SETTING, showSolutionSteps)
@@ -621,6 +643,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         showTextView.text = text
     }
 
+    private fun makeToast(message: String, position: Int?, yOffset: Int?) {
+        var toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        position?.let { toast.setGravity(it, 0, yOffset ?: 0) }
+        toast.show()
+
+    }
 
     override fun onAddWord(word: String, position: Int) {
 
@@ -629,17 +657,14 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             isNeighbors(word, gameWordsList[position + 1]) -> 1
             isNeighbors(word, gameWordsList[position - 1]) -> -1
             else -> {
-                Toast.makeText(
-                    this,
-                    "More than one letter difference than adjacent word",
-                    Toast.LENGTH_SHORT
-                ).show()
+                makeToast(getString(R.string.not_adjacent), Gravity.TOP, 50)
                 return
             }
         }
 
         if (!dbHelper.check_word(word)) {
-            Toast.makeText(this, "Word not in the Scrabble dictionary", Toast.LENGTH_SHORT).show()
+
+            makeToast(getString(R.string.not_in_dict), Gravity.TOP, 50)
             return
         }
 
@@ -661,15 +686,11 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             hideKeyboard(this, currentFocus)
 
             if (solutionList.size < gameWordsList.size) {
-                Toast.makeText(
-                    this,
-                    "way to go! But... there is a shorter solution",
-                    Toast.LENGTH_SHORT
-                ).show()
-                midWordAdapter?.notifyAdapterOfWin(false)
+                buildEndGameAlertDialog(getString(R.string.done_but_shorter))
+                midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.SHORTER)
             } else {
-                Toast.makeText(this, "way to go!", Toast.LENGTH_SHORT).show()
-                midWordAdapter?.notifyAdapterOfWin(true)
+                buildEndGameAlertDialog(getString(R.string.way_to_go))
+                midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.WIN)
 
             }
         } else {
@@ -680,23 +701,76 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     }
 
 
-    override fun onRemoveWord(position: Int, editWordPosition: Int) {
+    private fun buildEndGameAlertDialog(message: String) {
+        val alertDialog = AlertDialog.Builder(this).create()
+        alertDialog.setMessage(message)
+        when (message) {
+            getString(R.string.way_to_go) ->
+                alertDialog.setButton(
+                    DialogInterface.BUTTON_NEGATIVE,
+                    getString(R.string.start_over)
+                ) { _, _ ->
+                    startOver()
+                }
+            getString(R.string.done_but_shorter) ->
+                alertDialog.setButton(
+                    DialogInterface.BUTTON_NEGATIVE,
+                    getString(R.string.keep_trying)
+                ) { _, _ -> }
+        }
+        alertDialog.setButton(
+            DialogInterface.BUTTON_POSITIVE,
+            getString(R.string.new_game)
+        ) { _, _ ->
+            newGame()
+        }
+        alertDialog.show()
+
+
+    }
+
+
+    private fun buildAlertDialog(message: String) {
+        val alertDialog = AlertDialog.Builder(this).create()
+        alertDialog.setMessage(message)
+        alertDialog.show()
+
+
+    }
+
+    override fun onRemoveWord(position: Int, editWordPosition: Int, win: MidWordAdapter.gameStat) {
         if (position == 0 || position == gameWordsList.size - 1) //should not be able to reach this statement
             return
 
         gameWordsList[position] = ""
 
-        if (position != editWordPosition) {
-            var hintPos = 1
-            if (position < editWordPosition)
-                hintPos = -1
-            val from = min(position, editWordPosition + hintPos)
-            val to = max(position, editWordPosition + hintPos)
+        if (win == MidWordAdapter.gameStat.NOT_WIN) {
+            if (position != editWordPosition) {
+                var hintPos = 1
+                if (position < editWordPosition)
+                    hintPos = -1
+                var from = min(position, editWordPosition + hintPos)
+                var to = max(position, editWordPosition + hintPos)
 
-            for (i in to downTo from)
-                gameWordsList.removeAt(i)
+                for (i in to downTo from)
+                    gameWordsList.removeAt(i)
+
+            }
+            midWordAdapter?.notifyDataSetChanged()
+
+
+        } else {
+            if (position < gameWordsList.size / 2) {
+                for (i in position-1 downTo 1)
+                    gameWordsList.removeAt(i)
+            } else {
+                for (i in gameWordsList.size - 1 downTo position+1)
+                    gameWordsList.removeAt(i)
+            }
+            midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.NOT_WIN)
         }
-        midWordAdapter?.notifyDataSetChanged()
+
+
     }
 
 
@@ -711,5 +785,6 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
+
 
 }
