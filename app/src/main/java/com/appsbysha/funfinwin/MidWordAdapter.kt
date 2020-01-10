@@ -148,7 +148,7 @@ class MidWordAdapter(
 
     }
 
-    fun notifyAdapterOfWin(win: gameStat) { //... your custom logic
+    fun notifyAdapterOfWin(win: gameStat) {
 
         isWin = win
         notifyDataSetChanged()
