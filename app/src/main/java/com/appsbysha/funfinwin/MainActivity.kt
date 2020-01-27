@@ -276,6 +276,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 progressBar?.hide()
                 if (showSolutionSteps)
                     setShowStepsText()
+                instructionsTextView.text = "Can you get from $firstWord to $lastWord by changing one letter at a time?"
 
             } else
                 createGame()
