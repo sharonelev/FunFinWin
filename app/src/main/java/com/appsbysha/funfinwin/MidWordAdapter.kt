@@ -1,7 +1,9 @@
 package com.appsbysha.funfinwin
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
@@ -14,8 +16,12 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.extensions.LayoutContainer
+import kotlinx.android.synthetic.main.word_row.view.*
 
 class MidWordAdapter(
     private val items: MutableList<String>, private val numOfLetters: Int, private val context: Context,
@@ -102,7 +108,7 @@ class MidWordAdapter(
                 newLetter.setBackgroundResource(R.drawable.editable_letter_background)
                 newLetter.setOnFocusChangeListener{_, hasFocus ->
                     if(hasFocus){
-                        newLetter.setBackgroundResource(R.drawable.focused_letter_background)
+                        newLetter.setBackgroundResource(R.drawable.focused_letter_background) //use white circle and make orange
                     }
                     else{
                         newLetter.setBackgroundResource(R.drawable.editable_letter_background)
@@ -158,10 +164,10 @@ class MidWordAdapter(
     inner class WordViewHolder(view: View) : RecyclerView.ViewHolder(view), TextWatcher,
         View.OnClickListener {
 
-        var rowLayout: View = view.findViewById<View>(R.id.row_layout)
-        var linearLayout: LinearLayout = view.findViewById(R.id.editTextLayout)
-        var removeWord: TextView = view.findViewById(R.id.removeWord)
-        var stepNum: TextView = view.findViewById(R.id.stepNum)
+        var rowLayout: View = view.row_layout
+        var linearLayout: LinearLayout = view.editTextLayout
+        var removeWord: TextView = view.removeWord
+        var stepNum: TextView = view.stepNum
 
         private var letterTemp = ""
 
@@ -221,7 +227,6 @@ class MidWordAdapter(
                 }
             }
         }
-
 
     }
 

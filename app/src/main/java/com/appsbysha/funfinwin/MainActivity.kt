@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.activity_main.*
 import org.florescu.android.rangeseekbar.RangeSeekBar
 import java.io.IOException
 import kotlin.math.max
@@ -36,9 +37,6 @@ import kotlin.math.min
 class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     MidWordAdapter.RemoveWordListener {
     private var drawerToggle: ActionBarDrawerToggle? = null
-    private lateinit var drawerLeft: LinearLayout
-    var drawerLayout: DrawerLayout? = null
-    private lateinit var toolbar: androidx.appcompat.widget.Toolbar
     private var numOfLetters = 0
     private var minWords = 4
     private var maxWords = 10
@@ -52,8 +50,6 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private var progressBar: Dialog? = null
     var firstWord: String = ""
     var lastWord: String = ""
-    lateinit var showTextView: TextView
-
     lateinit var gameWordsList: MutableList<String>
 
     private var showSolutionSteps = true
@@ -73,12 +69,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         setContentView(R.layout.activity_main)
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this)
 
-        toolbar = findViewById(R.id.toolBar)
-        drawerLayout = findViewById(R.id.drawerLayout)
-        drawerLeft = findViewById(R.id.leftDrawer)
+
         setupToolbar()
         setupDrawerToggle()
-        showTextView = findViewById(R.id.showNumStepsDrawerButton)
         attachDB()
 
         progressBar = UiUtils.createProgressDialog(this)
@@ -96,12 +89,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         }
 
 
-        var threeTextview = findViewById<TextView>(R.id.threeLetters)
-        threeTextview.setOnClickListener { numOfLettersClick(threeTextview) }
-        var fourTextview = findViewById<TextView>(R.id.fourLetters)
-        fourTextview.setOnClickListener { numOfLettersClick(fourTextview) }
-        var fiveTextview = findViewById<TextView>(R.id.fiveLetters)
-        fiveTextview.setOnClickListener { numOfLettersClick(fiveTextview) }
+        threeLetters.setOnClickListener { numOfLettersClick(threeLetters) }
+        fourLetters.setOnClickListener { numOfLettersClick(fourLetters) }
+        fiveLetters.setOnClickListener { numOfLettersClick(fiveLetters) }
 
         setSettings()
 
@@ -112,9 +102,9 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
         numOfLetters = sharedPrefs.getInt(NUM_OF_LETTERS_SETTING, 4)
         when (numOfLetters) {
-            3 -> numOfLettersClick(findViewById(R.id.threeLetters))
-            4 -> numOfLettersClick(findViewById(R.id.fourLetters))
-            5 -> numOfLettersClick(findViewById(R.id.fiveLetters))
+            3 -> numOfLettersClick(threeLetters)
+            4 -> numOfLettersClick(fourLetters)
+            5 -> numOfLettersClick(fiveLetters)
         }
         showSolutionSteps = sharedPrefs.getBoolean(SHOW_SETTING, false)
         applyShowHide()
@@ -149,10 +139,10 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     private fun setupToolbar() {
 
-        toolbar = findViewById(R.id.toolBar)
-        setSupportActionBar(toolbar)
+
+        setSupportActionBar(toolBar)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
-        toolbar.visibility = View.VISIBLE
+        toolBar.visibility = View.VISIBLE
 
 
     }
@@ -160,7 +150,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun setupDrawerToggle() {
 
         drawerToggle = object : ActionBarDrawerToggle(
-            this, drawerLayout, toolbar, R.string.app_name,
+            this, drawerLayout, toolBar, R.string.app_name,
             R.string.app_name
         ) {
             override fun onDrawerOpened(drawerView: View) {
@@ -539,7 +529,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     fun newGameClick(view: View) {
 
-        drawerLayout?.closeDrawer(drawerLeft)
+        drawerLayout?.closeDrawer(leftDrawer)
         newGame()
 
     }
@@ -554,7 +544,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     fun startOverClick(view: View) {
 
         startOver()
-        drawerLayout?.closeDrawer(drawerLeft)
+        drawerLayout?.closeDrawer(leftDrawer)
 
     }
 
@@ -571,12 +561,12 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
         gameWordsList.clear()
         gameWordsList.addAll(solutionList)
         midWordAdapter?.notifyAdapterOfWin(MidWordAdapter.gameStat.WIN)
-        drawerLayout?.closeDrawer(drawerLeft)
+        drawerLayout?.closeDrawer(leftDrawer)
 
     }
 
     fun hintClick(view: View) {
-        drawerLayout?.closeDrawer(drawerLeft)
+        drawerLayout?.closeDrawer(leftDrawer)
         hint()
     }
 
@@ -623,7 +613,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 4,
                 0
             )
-            showTextView.text = text
+            showNumStepsDrawerButton.text = text
         }
     }
 
@@ -640,7 +630,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             4,
             0
         )
-        showTextView.text = text
+        showNumStepsDrawerButton.text = text
     }
 
     private fun makeToast(message: String, position: Int?, yOffset: Int?) {

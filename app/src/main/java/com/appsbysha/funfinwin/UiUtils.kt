@@ -7,8 +7,8 @@ import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.util.DisplayMetrics
 import android.view.WindowManager.BadTokenException
-import android.widget.ProgressBar
 import androidx.core.content.ContextCompat
+import kotlinx.android.synthetic.main.dialog_progress.*
 import kotlin.math.roundToInt
 
 object UiUtils {
@@ -30,7 +30,7 @@ object UiUtils {
         dialog.setCancelable(false)
         dialog.window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.setContentView(R.layout.dialog_progress)
-        val progressBar = dialog.findViewById<ProgressBar>(R.id.loadingProgressBar)
+        val progressBar = dialog.loadingProgressBar
         progressBar.indeterminateDrawable.setColorFilter(
             ContextCompat.getColor(mContext, R.color.colorAccent),
             PorterDuff.Mode.MULTIPLY
