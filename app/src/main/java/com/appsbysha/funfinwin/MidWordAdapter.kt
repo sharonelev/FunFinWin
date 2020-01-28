@@ -78,8 +78,8 @@ class MidWordAdapter(
 
 
         val params = LinearLayout.LayoutParams(
-            UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context),
-            UiUtils.dpToPixels(LinearLayout.LayoutParams.WRAP_CONTENT, context)
+            UiUtils.dpToPixels(40, context),
+            UiUtils.dpToPixels(40, context)
         )
         params.setMargins(1, 0, 1, 0)
 
@@ -95,6 +95,7 @@ class MidWordAdapter(
             newLetter.gravity =
                 android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
             newLetter.textSize = UiUtils.pixelsToSp(context, 8f)
+
             if (word.isEmpty()) {
                 editWordPosition = position
                 newLetter.setTypeface(Typeface.SANS_SERIF, Typeface.NORMAL)
@@ -105,13 +106,17 @@ class MidWordAdapter(
                 newLetter.isCursorVisible = false
 
                 newLetter.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                newLetter.setBackgroundResource(R.drawable.editable_letter_background)
+                newLetter.setBackgroundResource(R.drawable.white_circle)
+                newLetter.background.setTint(ContextCompat.getColor(context, R.color.editableLetterBackground))
+
                 newLetter.setOnFocusChangeListener{_, hasFocus ->
                     if(hasFocus){
-                        newLetter.setBackgroundResource(R.drawable.focused_letter_background) //use white circle and make orange
+                        newLetter.setBackgroundResource(R.drawable.white_circle)
+                        newLetter.background.setTint(ContextCompat.getColor(context, R.color.focusedLetterBackground))
                     }
                     else{
-                        newLetter.setBackgroundResource(R.drawable.editable_letter_background)
+                        newLetter.setBackgroundResource(R.drawable.white_circle)
+                        newLetter.background.setTint(ContextCompat.getColor(context, R.color.editableLetterBackground))
                     }
                     newLetter.setOnKeyListener { _, keyCode, event ->
                         if (keyCode == KeyEvent.KEYCODE_DEL && event.action == KeyEvent.ACTION_DOWN) {
@@ -132,7 +137,8 @@ class MidWordAdapter(
 
            else {
                 newLetter.setText(wordArray[i].toString())
-                newLetter.setBackgroundResource(R.drawable.valid_letter_background)
+                newLetter.setBackgroundResource(R.drawable.white_circle)
+                newLetter.background.setTint(ContextCompat.getColor(context, R.color.white))
 
                 newLetter.isEnabled = false
                 if (position != 0 && position != itemCount - 1) {

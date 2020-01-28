@@ -16,15 +16,13 @@ import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.widget.LinearLayout
-import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -82,7 +80,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
             if (minValue > MIN_LIMIT) {
                 stepRangeBar.selectedMinValue = MIN_LIMIT
             }
-            var editor = sharedPrefs.edit()
+            val editor = sharedPrefs.edit()
             editor.putInt(MIN_SETTING, minValue)
             editor.putInt(MAX_SETTING, maxValue)
             editor.apply()
@@ -157,7 +155,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 super.onDrawerOpened(drawerView)
                 val imm =
                     getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+                imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
             }
         }
         drawerToggle?.let {
@@ -192,11 +190,11 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     private fun createGame() {
 
 
-        var solveAsync = SolveAsync()
+        val solveAsync = SolveAsync()
         solveAsync.execute()
 
 
-        var handler = Handler()
+        val handler = Handler()
         handler.postDelayed(
             {
                 if (solveAsync.status == AsyncTask.Status.RUNNING) {
@@ -276,7 +274,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 progressBar?.hide()
                 if (showSolutionSteps)
                     setShowStepsText()
-                instructionsTextView.text = "Can you get from $firstWord to $lastWord by changing one letter at a time?"
+                instructionsTextView.text = HtmlCompat.fromHtml("Can you get from <b>${firstWord.toUpperCase()}</b> to <b>${lastWord.toUpperCase()}</b> by changing one letter at a time?", 0)
 
             } else
                 createGame()
@@ -311,7 +309,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
             if (list.size > 1) {
                 //don't swap a letter that was just swapped
-                var twoWordsBackArray = list[list.size - 2]
+                val twoWordsBackArray = list[list.size - 2]
                 if (firstWordArray[index] != twoWordsBackArray[index])
                     continue
             }
@@ -355,7 +353,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                     list.remove(newWord)
                 else {
                     usedWordsList.remove(newWord)
-                    var p = solve.indexOf(firstWord)
+                    val p = solve.indexOf(firstWord)
                     if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
                         return solve
                     else {
@@ -391,7 +389,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
                 if (list.size > 1) {
                     //don't swap a letter that was just swapped
-                    var twoWordsBackArray = list[list.size - 2]
+                    val twoWordsBackArray = list[list.size - 2]
                     if (firstWordArray[index] != twoWordsBackArray[index])
                         continue
                 }
@@ -456,7 +454,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
                         usedWordsList.remove(newWord) //the new word leads to solution even if not optimal
 
-                        var p = solve.indexOf(firstWord)
+                        val p = solve.indexOf(firstWord)
                         if (solve.size - p == calcOptimalMin(firstWordArray, secondWordArray))
                             return solve
                         else {
@@ -597,7 +595,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     private fun applyShowHide() {
 
-        var editor = sharedPrefs.edit()
+        val editor = sharedPrefs.edit()
         editor.putBoolean(SHOW_SETTING, showSolutionSteps)
         editor.apply()
         //get show hide from shared pref
@@ -635,7 +633,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     }
 
     private fun makeToast(message: String, position: Int?, yOffset: Int?) {
-        var toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
         position?.let { toast.setGravity(it, 0, yOffset ?: 0) }
         toast.show()
 
@@ -644,7 +642,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
     override fun onAddWord(word: String, position: Int) {
 
 
-        var hintPos: Int = when {
+        val hintPos: Int = when {
             isNeighbors(word, gameWordsList[position + 1]) -> 1
             isNeighbors(word, gameWordsList[position - 1]) -> -1
             else -> {
@@ -740,8 +738,8 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 var hintPos = 1
                 if (position < editWordPosition)
                     hintPos = -1
-                var from = min(position, editWordPosition + hintPos)
-                var to = max(position, editWordPosition + hintPos)
+                val from = min(position, editWordPosition + hintPos)
+                val to = max(position, editWordPosition + hintPos)
 
                 for (i in to downTo from)
                     gameWordsList.removeAt(i)
