@@ -274,7 +274,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                 progressBar?.hide()
                 if (showSolutionSteps)
                     setShowStepsText()
-                instructionsTextView.text = HtmlCompat.fromHtml("Can you get from <b>${firstWord.toUpperCase()}</b> to <b>${lastWord.toUpperCase()}</b> by changing one letter at a time?", 0)
+                instructionsTextView.text = HtmlCompat.fromHtml("Can you get from<br><b>${firstWord.toUpperCase()}</b> to <b>${lastWord.toUpperCase()}</b><br>by changing one letter at a time?", 0)
 
             } else
                 createGame()
