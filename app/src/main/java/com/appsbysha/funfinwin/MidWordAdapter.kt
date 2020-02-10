@@ -22,6 +22,7 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.word_row.view.*
+import java.util.*
 
 class MidWordAdapter(
     private val items: MutableList<String>, private val numOfLetters: Int, private val context: Context,
@@ -94,7 +95,8 @@ class MidWordAdapter(
             newLetter.layoutParams = params
             newLetter.gravity =
                 android.view.Gravity.CENTER_VERTICAL or android.view.Gravity.CENTER_HORIZONTAL
-            newLetter.textSize = UiUtils.pixelsToSp(context, 8f)
+            newLetter.textSize = UiUtils.pixelsToSp(context, 12f)
+
 
             if (word.isEmpty()) {
                 editWordPosition = position
@@ -136,7 +138,7 @@ class MidWordAdapter(
             }
 
            else {
-                newLetter.setText(wordArray[i].toString())
+                newLetter.setText(wordArray[i].toString().toUpperCase())
                 newLetter.setBackgroundResource(R.drawable.white_circle)
                 newLetter.background.setTint(ContextCompat.getColor(context, R.color.white))
 
@@ -184,6 +186,7 @@ class MidWordAdapter(
                 if (s.isBlank()) {
                     return
                 }
+
 
                 for (index in 0 until linearLayout.childCount) {
                     val letter = linearLayout.getChildAt(index)

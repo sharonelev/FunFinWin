@@ -6,10 +6,11 @@
         android:layout_height="match_parent">
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary">
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
+            android:orientation="vertical">
 
         <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolBar"
@@ -18,10 +19,7 @@
                 android:background="@color/focusedLetterBackground"
                 android:fitsSystemWindows="true"
                 android:minHeight="?android:attr/actionBarSize"
-                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         </androidx.appcompat.widget.Toolbar>
 
@@ -29,25 +27,31 @@
                 android:id="@+id/instructionsTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_margin="20dp"
-                app:layout_constraintTop_toBottomOf="@id/toolBar"
-                />
+                android:layout_marginTop="10dp"
+                android:gravity="center" />
 
-        <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/wordsRecyclerView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/instructionsTextView" />
+        <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
 
 
+                <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/wordsRecyclerView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:orientation="vertical" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
             android:id="@+id/leftDrawer"
@@ -61,55 +65,55 @@
             android:paddingEnd="20dp">
 
         <ImageView
-                android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:paddingBottom="20dp"
                 android:src="@mipmap/ic_launcher" />
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/newGameDrawerButton"
+
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:onClick="newGameClick"
                 android:text="@string/new_game" />
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/startOverDrawerButton"
+
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:onClick="startOverClick"
 
                 android:text="@string/start_over" />
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/hintDrawerButton"
+
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-android:onClick="hintClick"
+                android:layout_gravity="center_vertical"
+                android:onClick="hintClick"
                 android:text="@string/hint" />
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/solveDrawerButton"
+
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:onClick="solveClick"
                 android:text="@string/solve" />
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/showNumStepsDrawerButton"
+
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
                 android:onClick="showHideClick"
                 android:text="@string/hide_number_of_steps" />
 
@@ -154,11 +158,11 @@ android:onClick="hintClick"
         </LinearLayout>
 
         <TextView
-                android:layout_gravity="center_vertical"
-
                 android:id="@+id/minMaxDrawerRange"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:text="@string/min_max_steps" />
 
         <org.florescu.android.rangeseekbar.RangeSeekBar
@@ -169,4 +173,5 @@ android:onClick="hintClick"
                 app:absoluteMinValue="4"
                 app:textAboveThumbsColor="@color/colorPrimary" />
     </LinearLayout>
+
 </androidx.drawerlayout.widget.DrawerLayout>

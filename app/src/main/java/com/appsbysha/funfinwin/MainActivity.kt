@@ -269,12 +269,13 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
                     this@MainActivity
                 )
                 gameWordsRecyclerView.layoutManager = LinearLayoutManager(baseContext)
-
                 gameWordsRecyclerView.adapter = midWordAdapter
+
+
                 progressBar?.hide()
                 if (showSolutionSteps)
                     setShowStepsText()
-                instructionsTextView.text = HtmlCompat.fromHtml("Can you get from<br><b>${firstWord.toUpperCase()}</b> to <b>${lastWord.toUpperCase()}</b><br>by changing one letter at a time?", 0)
+                instructionsTextView.text = HtmlCompat.fromHtml("Can you get from <b>${firstWord.toUpperCase()}</b> to <b>${lastWord.toUpperCase()}</b><br>by changing one letter at a time?", 0)
 
             } else
                 createGame()
@@ -476,7 +477,7 @@ class MainActivity : AppCompatActivity(), MidWordAdapter.AddWordListener,
 
     private fun isWord(word: String): Boolean {
 
-        return dbHelper.check_word(word)
+        return dbHelper.check_word(word.toLowerCase())
 
     }
 
