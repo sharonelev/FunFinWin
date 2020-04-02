@@ -1,9 +1,7 @@
 package com.appsbysha.funfinwin
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.InputFilter
 import android.text.InputFilter.LengthFilter
@@ -16,13 +14,9 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.word_row.view.*
-import java.util.*
 
 class MidWordAdapter(
     private val items: MutableList<String>, private val numOfLetters: Int, private val context: Context,
